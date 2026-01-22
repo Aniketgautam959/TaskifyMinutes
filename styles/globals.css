@@ -1,0 +1,133 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+@plugin "tailwindcss-react-aria-components";
+
+:root {
+  --background: #ffffff;
+  --foreground: #09090b; /* zinc-950 */
+  --muted: #f4f4f5; /* zinc-100 */
+  --muted-foreground: #71717a; /* zinc-500 */
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --border: #e4e4e7; /* zinc-200 */
+  --input: #e4e4e7;
+  --primary: #09090b; /* zinc-950 */
+  --primary-foreground: #fafafa; /* zinc-50 */
+  
+  --scrollbar-track: #ffffff;
+  --scrollbar-thumb: #a1a1aa; /* zinc-400 */
+  --scrollbar-thumb-hover: #71717a; /* zinc-500 */
+  
+  --dotted-bg-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  --background: #050505;
+  --foreground: #ffffff;
+  --muted: #27272a; /* zinc-800 */
+  --muted-foreground: #a1a1aa; /* zinc-400 */
+  --card: #09090b; /* zinc-950 */
+  --card-foreground: #ffffff;
+  --border: #27272a;
+  --input: #27272a;
+  --primary: #fafafa; /* zinc-50 */
+  --primary-foreground: #09090b; /* zinc-950 */
+
+  --scrollbar-track: #050505;
+  --scrollbar-thumb: #222;
+  --scrollbar-thumb-hover: #333;
+  
+  --dotted-bg-color: rgba(255, 255, 255, 0.1);
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+}
+
+/* Custom Scrollbar for 'pro' feel */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 1px solid rgba(0,0,0,0); /* creates padding around thumb */
+  background-clip: padding-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Styles moved from app/page.tsx */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+    margin: 0;
+    overflow-x: hidden;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-playfair), serif;
+}
+
+.dotted-bg {
+    background-image: radial-gradient(var(--dotted-bg-color) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.gradient-text {
+    background: linear-gradient(to right, var(--foreground), var(--muted-foreground));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Global scrollbar styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+}
