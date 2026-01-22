@@ -138,7 +138,7 @@ const App: React.FC = () => {
             <Link href="/sign-up" className="w-full sm:w-auto px-8 py-3 bg-green-500/20 hover:bg-green-600/20 border border-green-500/40 rounded-full text-lg font-bold transition-all flex items-center justify-center gap-2 text-green-400 cursor-pointer">
               Try TaskifyMinutes <span className="text-lg">›</span>
             </Link>
-            <Link href="https://github.com/Aditya-madwal/MeetingProject" target="_blank" className="w-full sm:w-auto px-8 py-3 bg-indigo-500/20 hover:bg-indigo-600/20 border border-indigo-500/40 rounded-full text-lg font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2 text-indigo-400 cursor-pointer">
+            <Link href="https://github.com/Aniketgautam959/TaskifyMinutes" target="_blank" className="w-full sm:w-auto px-8 py-3 bg-indigo-500/20 hover:bg-indigo-600/20 border border-indigo-500/40 rounded-full text-lg font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2 text-indigo-400 cursor-pointer">
               <Github className="w-5 h-5" />
               GitHub
             </Link>
@@ -288,7 +288,7 @@ const App: React.FC = () => {
                           {result.mom.map((item, i) => (
                             <div key={i} className="flex gap-3 text-xs p-3 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors">
                               <span className={`shrink-0 mt-0.5 w-1.5 h-1.5 rounded-sm ${item.type === 'decision' ? 'bg-indigo-400' :
-                                  item.type === 'action' ? 'bg-emerald-400' : 'bg-muted-foreground'
+                                item.type === 'action' ? 'bg-emerald-400' : 'bg-muted-foreground'
                                 }`} />
                               <span className="text-muted-foreground leading-snug">{item.content}</span>
                             </div>
