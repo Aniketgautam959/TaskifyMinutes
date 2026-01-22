@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+TaskifyMinutes
 
-## Getting Started
+Turn Meetings into Action.
+AI-powered meeting summaries, automated MOM (Minutes of Meeting) generation, and smart task extraction —
+stop taking notes, start taking action.
 
-First, run the development server:
+What Is TaskifyMinutes?
 
-```bash
+TaskifyMinutes is a Next.js web app that uses AI to automatically convert meeting discussions into actionable summaries and tasks. Whether it’s for team syncs, client calls, or project reviews, TaskifyMinutes helps you save time and boost productivity.
+
+Features
+
+AI-powered meeting summaries
+
+Automatic Minutes of Meeting (MOM) creation
+
+Intelligent task extraction
+
+Easy to use and cloud-ready
+
+Improves productivity and clarity
+
+Tech Stack
+
+Frontend: Next.js (App Router)
+
+Language: TypeScript
+
+Styling: Tailwind CSS
+
+AI Integration: OpenAI or similar
+
+Deployment: Vercel
+
+Getting Started
+Install Dependencies
+npm install
+# or
+yarn
+# or
+pnpm install
+
+Run the Development Server
 npm run dev
 # or
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open your browser and go to:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+http://localhost:3000
 
-## Learn More
+Project Structure
+app/                  # Next.js pages & routes
+├── api/              # Backend API routes
+├── components/       # Reusable components
+public/               # Static assets
+styles/               # Tailwind and global CSS
+next.config.ts        # Next.js configuration
 
-To learn more about Next.js, take a look at the following resources:
+How It Helps
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Use TaskifyMinutes to:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Turn meeting content into quick summaries
 
-## Deploy on Vercel
+Generate Minutes of Meeting (MOM) automatically
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Extract important tasks and action items
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Reduce time spent on manual note-taking
+
+Deployment
+
+Deploy your app using Vercel:
+
+https://vercel.com/new
+
+Contribute
+
+Contributions are welcome.
+Feel free to open issues or pull requests.
