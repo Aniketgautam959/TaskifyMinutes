@@ -5,6 +5,7 @@ import { Meeting, Task } from '../types';
 import SuggestedTask from '../microcomponents/SuggestedTask';
 import { Calendar, Clock, Download, FileText, Loader, ArrowLeft, Trash2, Maximize2, MoreHorizontal, Sparkles } from 'lucide-react';
 import { getMeetingById, deleteMeeting } from '../services/api/meetings';
+import jsPDF from 'jspdf';
 
 interface MeetingViewProps {
   meetingId: string;
@@ -60,33 +61,176 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
   const handleExport = () => {
     if (!meeting) return;
 
-    // Create export data object
-    const exportData = {
-      title: meeting.title,
-      date: meeting.date,
-      duration: meeting.duration,
-      category: meeting.category,
-      summary: meeting.summary,
-      tags: meeting.tags,
-      transcript: meeting.transcript,
-      mom: meeting.mom,
-      tasks: meeting.tasks,
-      confidenceLevel: meeting.confidenceLevel,
+    const doc = new jsPDF();
+    let yPosition = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const maxWidth = pageWidth - 2 * margin;
+
+    // Helper function to add new page if needed
+    const checkAndAddPage = (requiredSpace: number) => {
+      if (yPosition + requiredSpace > pageHeight - margin) {
+        doc.addPage();
+        yPosition = 20;
+        return true;
+      }
+      return false;
     };
 
-    // Convert to JSON string
-    const jsonString = JSON.stringify(exportData, null, 2);
+    // Helper function to wrap text
+    const addWrappedText = (text: string, x: number, fontSize: number, maxWidth: number, isBold = false) => {
+      doc.setFontSize(fontSize);
+      if (isBold) {
+        doc.setFont('helvetica', 'bold');
+      } else {
+        doc.setFont('helvetica', 'normal');
+      }
+      const lines = doc.splitTextToSize(text, maxWidth);
+      lines.forEach((line: string) => {
+        checkAndAddPage(10);
+        doc.text(line, x, yPosition);
+        yPosition += fontSize * 0.5;
+      });
+    };
 
-    // Create blob and download
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${meeting.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date(meeting.date).toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Title
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text(meeting.title, margin, yPosition);
+    yPosition += 12;
+
+    // Metadata
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Date: ${new Date(meeting.date).toLocaleDateString()}`, margin, yPosition);
+    yPosition += 6;
+    doc.text(`Duration: ${meeting.duration}`, margin, yPosition);
+    yPosition += 6;
+    if (meeting.category) {
+      doc.text(`Category: ${meeting.category}`, margin, yPosition);
+      yPosition += 6;
+    }
+    if (meeting.tags && meeting.tags.length > 0) {
+      doc.text(`Tags: ${meeting.tags.join(', ')}`, margin, yPosition);
+      yPosition += 10;
+    } else {
+      yPosition += 4;
+    }
+
+    // AI Summary Section
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    checkAndAddPage(20);
+    doc.text('AI Summary', margin, yPosition);
+    yPosition += 8;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    addWrappedText(meeting.summary, margin, 10, maxWidth);
+    yPosition += 10;
+
+    // Transcript Section
+    if (meeting.transcript && meeting.transcript.length > 0) {
+      checkAndAddPage(20);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Transcript', margin, yPosition);
+      yPosition += 8;
+
+      meeting.transcript.forEach((item, index) => {
+        checkAndAddPage(15);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 100, 200);
+        doc.text(`${item.speakername} [${item.timestamp}]`, margin, yPosition);
+        yPosition += 5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(0, 0, 0);
+        addWrappedText(item.content, margin, 9, maxWidth);
+        yPosition += 5;
+      });
+      yPosition += 5;
+    }
+
+    // MOM Section
+    if (meeting.mom && meeting.mom.length > 0) {
+      checkAndAddPage(20);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Minutes of Meeting', margin, yPosition);
+      yPosition += 8;
+
+      meeting.mom.forEach((item, index) => {
+        checkAndAddPage(15);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+
+        if (item.type === 'decision') {
+          doc.setTextColor(128, 0, 128); // Purple
+          doc.text('[DECISION]', margin, yPosition);
+        } else if (item.type === 'action') {
+          doc.setTextColor(0, 150, 0); // Green
+          doc.text('[ACTION]', margin, yPosition);
+        } else {
+          doc.setTextColor(100, 100, 100); // Gray
+          doc.text('[NOTE]', margin, yPosition);
+        }
+
+        yPosition += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(0, 0, 0);
+        addWrappedText(item.content, margin, 9, maxWidth);
+        yPosition += 5;
+      });
+      yPosition += 5;
+    }
+
+    // Tasks Section
+    const suggestedTasks = meeting.tasks ? meeting.tasks.filter((t: any) => t.suggested === true) : [];
+    if (suggestedTasks.length > 0) {
+      checkAndAddPage(20);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Action Items', margin, yPosition);
+      yPosition += 8;
+
+      suggestedTasks.forEach((task: any, index: number) => {
+        checkAndAddPage(20);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${index + 1}. ${task.title}`, margin, yPosition);
+        yPosition += 6;
+
+        if (task.description) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          addWrappedText(task.description, margin + 5, 9, maxWidth - 5);
+        }
+
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Priority: ${task.priority || 'N/A'}`, margin + 5, yPosition);
+        yPosition += 5;
+
+        if (task.tags && task.tags.length > 0) {
+          doc.text(`Tags: ${task.tags.join(', ')}`, margin + 5, yPosition);
+          yPosition += 5;
+        }
+
+        doc.setTextColor(0, 0, 0);
+        yPosition += 3;
+      });
+    }
+
+    // Save PDF
+    const filename = `${meeting.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date(meeting.date).toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
   };
 
   useEffect(() => {
