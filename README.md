@@ -22,6 +22,11 @@ It simplifies meeting notes by generating structured outputs so teams can focus 
 - Clerk Authentication  
 
 ---
+Run the project
+npm run dev
+
+
+The app will be available at http://localhost:3000.
 
 ## Getting Started
 
