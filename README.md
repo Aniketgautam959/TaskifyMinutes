@@ -116,7 +116,7 @@ npm run dev
 
 Open 👉 http://localhost:3000
 ```
-
+---
 🎯 **Use Cases**
 
 Team meetings & standups
@@ -129,6 +129,6 @@ Event planning sessions
 
 Remote collaboration
 
-🌐 Live Demo
+🌐 **Live Demo**
 
 🔗 https://taskify-minutes.vercel.app
