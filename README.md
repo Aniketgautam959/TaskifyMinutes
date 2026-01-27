@@ -1,58 +1,57 @@
 # TaskifyMinutes
 
-TaskifyMinutes is a web app that helps you turn meetings into structured summaries and actionable tasks.  
-It uses AI to extract key insights, generate minutes of meetings (MoM), and identify action items from talks or transcripts.
+TaskifyMinutes is a web app that helps turn meetings into structured summaries and actionable tasks.  
+It uses AI to extract key insights, generate minutes of meetings (MoM), and identify action items.
 
 ---
 
 ## 🚀 Features
 
-- 📝 **AI Meeting Summary** – Generate concise meeting summaries  
-- 📊 **Minutes of Meeting (MoM)** – Structured decision and action logs  
-- ✅ **Task Extraction** – Extract actionable items from conversations  
-- 🎙️ **Easy Transcript View** – See speakers and conversation flow
+- AI-generated meeting summaries  
+- Automatic Minutes of Meeting (MoM)  
+- Task extraction from conversations  
+- Clean transcript view  
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Next.js** – React framework for frontend & SSR  
-- **TypeScript** – Strong typing and safer code  
-- **Tailwind CSS** – Utility-first styling  
-- **Clerk** – Authentication & user management  
-- **AI Integration** (e.g., Gemini/OpenAI) – For summaries & insights
+- Next.js  
+- TypeScript  
+- Tailwind CSS  
+- Clerk Authentication  
+- AI Integration  
 
 ---
 
-##  Getting Started
+## 🚀 Getting Started
 
-### 1. Install dependencies
+### Install dependencies
 ```bash
 npm install
-2. Run development server
+Run development server
+bash
+Copy code
 npm run dev
+Open http://localhost:3000 to view the app.
 
-
-Open http://localhost:3000
- to view.
-```bash
 📁 Project Structure
-
 app/ – Main app pages & components
 
 public/ – Static assets
 
-styles/ – Tailwind CSS styles, globals
+styles/ – Tailwind CSS styles
 
 next.config.ts – Next.js config
 
-middleware.ts – Route/auth handling
+middleware.ts – Route handling
 
-package.json – Dependencies and scripts
+package.json – Dependencies
 
-👩‍💻 Author
-
+👤 Author
 Aniket Gautam
 GitHub: https://github.com/Aniketgautam959
-
 Portfolio: https://web-folio-beta.vercel.app/
+
+yaml
+Copy code
