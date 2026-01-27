@@ -1,36 +1,58 @@
 # TaskifyMinutes
 
-TaskifyMinutes is a web application that helps turn meetings into clear summaries and actionable tasks.  
-It simplifies meeting notes by generating structured outputs so teams can focus on execution.
+TaskifyMinutes is a web app that helps you turn meetings into structured summaries and actionable tasks.  
+It uses AI to extract key insights, generate minutes of meetings (MoM), and identify action items from talks or transcripts.
 
 ---
 
-## Features
+## 🚀 Features
 
-- AI-generated meeting summaries  
-- Automatic MOM (Minutes of Meeting) creation  
-- Task extraction from meeting conversations  
-- Clean and minimal user interface  
+- 📝 **AI Meeting Summary** – Generate concise meeting summaries  
+- 📊 **Minutes of Meeting (MoM)** – Structured decision and action logs  
+- ✅ **Task Extraction** – Extract actionable items from conversations  
+- 🎙️ **Easy Transcript View** – See speakers and conversation flow
+
+---
+
+## 🛠️ Tech Stack
+
+- **Next.js** – React framework for frontend & SSR  
+- **TypeScript** – Strong typing and safer code  
+- **Tailwind CSS** – Utility-first styling  
+- **Clerk** – Authentication & user management  
+- **AI Integration** (e.g., Gemini/OpenAI) – For summaries & insights
 
 ---
 
-## Tech Stack
+##  Getting Started
 
-- Next.js  
-- TypeScript  
-- Tailwind CSS  
-- Clerk Authentication  
-
----
-Run the project
+### 1. Install dependencies
+```bash
+npm install
+2. Run development server
 npm run dev
 
 
-The app will be available at http://localhost:3000.
+Open http://localhost:3000
+ to view.
 
-## Getting Started
+📁 Project Structure
 
-### Install dependencies
-```bash
-npm install
+app/ – Main app pages & components
 
+public/ – Static assets
+
+styles/ – Tailwind CSS styles, globals
+
+next.config.ts – Next.js config
+
+middleware.ts – Route/auth handling
+
+package.json – Dependencies and scripts
+
+👩‍💻 Author
+
+Aniket Gautam
+GitHub: https://github.com/Aniketgautam959
+
+Portfolio: https://web-folio-beta.vercel.app/
