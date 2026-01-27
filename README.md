@@ -1,57 +1,134 @@
 # TaskifyMinutes
 
-TaskifyMinutes is a web app that helps turn meetings into structured summaries and actionable tasks.  
-It uses AI to extract key insights, generate minutes of meetings (MoM), and identify action items.
+An AI-powered meeting productivity web application built with Next.js that transforms meetings into **clear summaries, structured MOMs, and actionable tasks**—so teams focus on execution, not note-taking.
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?style=for-the-badge&logo=tailwind-css)
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
-- AI-generated meeting summaries  
-- Automatic Minutes of Meeting (MoM)  
-- Task extraction from conversations  
-- Clean transcript view  
+### 🧠 AI Intelligence
+
+- **AI Meeting Summary**: Automatically generate concise meeting summaries  
+- **MOM Generator**: Clear separation of discussions, decisions, and actions  
+- **Smart Task Extraction**: Detect actionable items from natural conversations  
+
+### 🎙️ Transcription & Files
+
+- **Transcript Generator**: Convert audio/video into readable transcripts  
+- **Speaker-wise Timeline**: Clean transcript flow with speaker labels  
+- **Google Cloud Storage**: Secure storage for uploaded audio/video files  
+
+### 📋 Task Management
+
+- **Action Item Detection**: Auto-detect tasks with priority levels  
+- **Task Categorization**: Organize tasks by context and urgency  
+- **Export Options**: Download summaries and MOMs  
+
+### 🎨 Modern UI/UX
+
+- **Dark Mode Interface**: Clean, distraction-free UI  
+- **Fully Responsive**: Optimized for all screen sizes  
+- **Minimal Design**: Focused on productivity and clarity  
 
 ---
 
 ## 🛠️ Tech Stack
 
-- Next.js  
-- TypeScript  
-- Tailwind CSS  
-- Clerk Authentication  
-- AI Integration  
+### Frontend
+
+- **[Next.js](https://nextjs.org)** – App Router & Server Components  
+- **[React](https://react.dev)** – Modern React features  
+- **[TypeScript](https://typescriptlang.org)** – Type-safe development  
+- **[Tailwind CSS](https://tailwindcss.com)** – Utility-first styling  
+
+### Backend & AI
+
+- **Server Actions** – Backend logic inside Next.js  
+- **AI Integration (Gemini)** – Summaries, MOM & task extraction  
+
+### Storage
+
+- **Google Cloud Storage** – Secure file uploads & media storage  
+
+### Authentication
+
+- **Clerk** – Authentication, sessions & protected routes  
+
+### Deployment
+
+- **Vercel** – Production deployment  
 
 ---
 
 ## 🚀 Getting Started
 
-### Install dependencies
+### Prerequisites
+
+- Node.js 18+
+- npm / yarn / pnpm
+- Google Cloud account
+- Clerk account
+
+---
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/Aniketgautam959/TaskifyMinutes.git
+cd TaskifyMinutes
+```
+2. **Install dependencies**
 ```bash
 npm install
-Run development server
-bash
-Copy code
+
+```
+3. **Set up environment variables**
+
+Create a .env.local file:
+```bash
+# Clerk Auth
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_key
+CLERK_SECRET_KEY=your_key
+
+# AI
+GEMINI_API_KEY=your_key
+
+# Google Cloud Storage
+GOOGLE_CLOUD_PROJECT_ID=your_project_id
+GOOGLE_CLOUD_CLIENT_EMAIL=your_client_email
+GOOGLE_CLOUD_PRIVATE_KEY=your_private_key
+GOOGLE_CLOUD_BUCKET_NAME=your_bucket_name
+
+# App URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+4.**Run development server**
+```bash
 npm run dev
-Open http://localhost:3000 to view the app.
 
-📁 Project Structure
-app/ – Main app pages & components
 
-public/ – Static assets
+Open 👉 http://localhost:3000
+```
 
-styles/ – Tailwind CSS styles
+🎯 **Use Cases**
 
-next.config.ts – Next.js config
+Team meetings & standups
 
-middleware.ts – Route handling
+College project discussions
 
-package.json – Dependencies
+Client calls & reviews
 
-👤 Author
-Aniket Gautam
-GitHub: https://github.com/Aniketgautam959
-Portfolio: https://web-folio-beta.vercel.app/
+Event planning sessions
 
-yaml
-Copy code
+Remote collaboration
+
+🌐 Live Demo
+
+🔗 https://taskify-minutes.vercel.app
