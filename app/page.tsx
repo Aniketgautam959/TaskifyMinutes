@@ -42,10 +42,10 @@ const Navbar: React.FC = () => (
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
         <ThemeToggle />
-        <Link href="/sign-in" className="text-green-500 hover:text-green-600 text-xs font-semibold transition-colors">
+        <Link href="/sign-in" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
           Login
         </Link>
-        <Link href="/sign-up" className="bg-green-500/30 text-green-500 hover:text-green-600 px-5 py-2 rounded-full text-xs font-semibold hover:bg-green-500 hover:text-white transition-colors">
+        <Link href="/sign-up" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90">
           Sign Up
         </Link>
       </div>
@@ -94,12 +94,28 @@ const Footer: React.FC = () => (
 
 // --- Main Application ---
 
+const sampleResult: SummaryResult = {
+  summary: "The team will close the Q3 budget by Thursday morning. Sarah is sending the draft tomorrow, and everyone reviews it Wednesday at 4 PM. Kevin takes resource allocation.",
+  mom: [
+    { type: 'decision', content: 'Finalize the Q3 budget by Thursday morning.' },
+    { type: 'action', content: 'Sarah sends the budget draft tomorrow afternoon.' },
+    { type: 'info', content: 'Follow-up review is Wednesday at 4 PM.' },
+  ],
+  tasks: [
+    'Sarah: send the Q3 budget draft by tomorrow afternoon',
+    'Review Sarah’s draft on Wednesday at 4 PM',
+    'Kevin: own resource allocation',
+  ],
+  schedule: [{ event: 'Budget draft review', time: 'Wednesday at 4 PM' }],
+};
+
 const App: React.FC = () => {
-  const [transcript, setTranscript] = useState<string>("John: We need to finalize the Q3 budget by Thursday morning. \nSarah: I can have the draft ready by tomorrow afternoon. \nMike: Let's schedule a follow-up for Wednesday at 4 PM to review Sarah's draft. \nJohn: Perfect, I'll also assign the resource allocation task to Kevin.");
+  const [transcript, setTranscript] = useState<string>("John: We need to finalize the Q3 budget by Thursday morning.\nSarah: I can have the draft ready by tomorrow afternoon.\nJohn: Let's schedule a follow-up for Wednesday at 4 PM.\nSarah: Perfect. I will assign the resource allocation to Kevin.");
   const [inputMode, setInputMode] = useState<'text' | 'audio'>('text');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [result, setResult] = useState<SummaryResult | null>(null);
+  const [showingSample, setShowingSample] = useState(true);
+  const [result, setResult] = useState<SummaryResult | null>(sampleResult);
   const [error, setError] = useState<string | null>(null);
 
   const selectRecording = (file: File | null) => {
@@ -122,6 +138,7 @@ const App: React.FC = () => {
     if (inputMode === 'audio' && !mediaFile) return;
     setLoading(true);
     setError(null);
+    setShowingSample(false);
     setResult(null);
 
     try {
@@ -167,7 +184,7 @@ const App: React.FC = () => {
             AI-powered summaries, automated MOM generation, and smart task extraction. Stop taking notes, start taking action.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
-            <Link href="/sign-up" className="w-full sm:w-auto px-8 py-3 bg-green-500/20 hover:bg-green-600/20 border border-green-500/40 rounded-full text-lg font-bold transition-all flex items-center justify-center gap-2 text-green-400 cursor-pointer">
+            <Link href="/sign-up" className="w-full sm:w-auto px-8 py-3 bg-foreground text-background rounded-full text-base font-medium transition-opacity hover:opacity-90 flex items-center justify-center gap-2 cursor-pointer">
               Try TaskifyMinutes <span className="text-lg">›</span>
             </Link>
             <Link href="https://github.com/Aniketgautam959/TaskifyMinutes" target="_blank" className="w-full sm:w-auto px-8 py-3 bg-indigo-500/20 hover:bg-indigo-600/20 border border-indigo-500/40 rounded-full text-lg font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2 text-indigo-400 cursor-pointer">
@@ -318,7 +335,7 @@ const App: React.FC = () => {
                   <button
                     onClick={handleSummarize}
                     disabled={loading || (inputMode === 'text' ? !transcript.trim() : !mediaFile)}
-                    className="w-full sm:w-auto px-4 py-2 bg-green-500/20 hover:bg-green-600/20 border border-green-500/40 rounded-full text-sm font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2 text-green-400 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-4 py-2 bg-foreground text-background rounded-full text-sm font-medium transition-opacity hover:opacity-90 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Processing...' : inputMode === 'audio' ? 'Summarize recording' : 'Analyze Text'}
                     {!loading && <span className="text-xs">→</span>}
@@ -357,6 +374,13 @@ const App: React.FC = () => {
 
                 {result && (
                   <div className="h-full overflow-y-auto custom-scrollbar p-6 space-y-6">
+                    {showingSample && (
+                      <div className="rounded-2xl border border-border bg-background/70 p-4">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Sample meeting</p>
+                        <p className="mt-1 text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-playfair), serif' }}>Q3 Budget Review</p>
+                        <audio src="/sample-meeting.m4a" controls preload="metadata" className="mt-3 w-full" />
+                      </div>
+                    )}
                     {/* Summary Block */}
                     <div className="animate-fade-in">
                       <h4 className="text-md items-center flex gap-2 font-bold text-foreground tracking-widest mb-3">

@@ -23,8 +23,8 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onNewCapture })
               </svg>
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-sm tracking-tighter text-foreground leading-none hidden sm:block">TaskifyMinutes</span>
-              <span className="font-mono text-[9px] text-muted-foreground mt-1 uppercase tracking-widest hidden md:block">Turn meetings into momentum.</span>
+              <span className="font-semibold text-sm tracking-tight text-foreground leading-none hidden sm:block">TaskifyMinutes</span>
+              <span className="text-[11px] text-muted-foreground mt-0.5 hidden md:block">Turn meetings into momentum.</span>
             </div>
           </div>
         </div>
@@ -46,7 +46,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onNewCapture })
               key={tab}
               onClick={() => onTabChange(tab)}
               className={`
-                relative z-10 flex-1 py-1.5 text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em]
+                relative z-10 flex-1 py-1.5 text-xs font-medium
                 transition-colors duration-200
                 ${activeTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/80'}
               `}
@@ -61,7 +61,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onNewCapture })
           <ThemeToggle />
           <button
             onClick={onNewCapture}
-            className="p-2 md:px-5 md:py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[12px] font-black uppercase tracking-wider hover:bg-primary/20 transition-all active:scale-95 flex items-center gap-2"
+            className="p-2 md:px-4 md:py-2 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity active:scale-[0.98] flex items-center gap-2"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span className="hidden md:inline">New Meeting</span>

@@ -1,46 +1,44 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
 @plugin "tailwindcss-react-aria-components";
 
 :root {
-  --background: #ffffff;
-  --foreground: #09090b; /* zinc-950 */
-  --muted: #f4f4f5; /* zinc-100 */
-  --muted-foreground: #71717a; /* zinc-500 */
+  --background: #f7f7f8;
+  --foreground: #111113;
+  --muted: #ececef;
+  --muted-foreground: #6b6b76;
   --card: #ffffff;
-  --card-foreground: #09090b;
-  --border: #e4e4e7; /* zinc-200 */
-  --input: #e4e4e7;
-  --primary: #09090b; /* zinc-950 */
-  --primary-foreground: #fafafa; /* zinc-50 */
-  
-  --scrollbar-track: #ffffff;
-  --scrollbar-thumb: #a1a1aa; /* zinc-400 */
-  --scrollbar-thumb-hover: #71717a; /* zinc-500 */
-  
-  --dotted-bg-color: rgba(0, 0, 0, 0.1);
+  --card-foreground: #111113;
+  --border: #e4e4e8;
+  --input: #e4e4e8;
+  --primary: #111113;
+  --primary-foreground: #f7f7f8;
+
+  --scrollbar-track: #f7f7f8;
+  --scrollbar-thumb: #c8c8d0;
+  --scrollbar-thumb-hover: #6b6b76;
+
+  --dotted-bg-color: rgba(17, 17, 19, 0.08);
 }
 
 .dark {
-  --background: #050505;
-  --foreground: #ffffff;
-  --muted: #27272a; /* zinc-800 */
-  --muted-foreground: #a1a1aa; /* zinc-400 */
-  --card: #09090b; /* zinc-950 */
-  --card-foreground: #ffffff;
-  --border: #27272a;
-  --input: #27272a;
-  --primary: #fafafa; /* zinc-50 */
-  --primary-foreground: #09090b; /* zinc-950 */
+  --background: #0b0b0d;
+  --foreground: #f5f5f6;
+  --muted: #16161a;
+  --muted-foreground: #9b9ba6;
+  --card: #121216;
+  --card-foreground: #f5f5f6;
+  --border: #26262c;
+  --input: #26262c;
+  --primary: #f5f5f6;
+  --primary-foreground: #111113;
 
-  --scrollbar-track: #050505;
-  --scrollbar-thumb: #222;
-  --scrollbar-thumb-hover: #333;
-  
-  --dotted-bg-color: rgba(255, 255, 255, 0.1);
+  --scrollbar-track: #0b0b0d;
+  --scrollbar-thumb: #2c2c32;
+  --scrollbar-thumb-hover: #3a3a42;
+
+  --dotted-bg-color: rgba(255, 255, 255, 0.06);
 }
 
 @theme {
@@ -83,16 +81,18 @@
 
 /* Styles moved from app/page.tsx */
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans), sans-serif;
     background-color: var(--background);
     color: var(--foreground);
     margin: 0;
     overflow-x: hidden;
     transition: background-color 0.3s, color 0.3s;
+    -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-playfair), serif;
+    font-family: var(--font-sans), sans-serif;
+    letter-spacing: -0.03em;
 }
 
 .dotted-bg {

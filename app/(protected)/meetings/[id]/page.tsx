@@ -17,7 +17,7 @@ export default function MeetingDetailsPage({ params }: { params: Promise<{ id: s
     <div className="space-y-6 px-8">
       <button 
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest pl-1"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium pl-1"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

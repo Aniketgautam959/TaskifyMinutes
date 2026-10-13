@@ -77,18 +77,18 @@ const MeetingsTable: React.FC<MeetingsTableProps> = ({ onSelectMeeting }) => {
        {/* Responsive Header */}
        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 px-1">
           <div className="space-y-1">
-             <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">Analyzed Meetings</h1>
-             <p className="text-muted-foreground text-xs md:text-sm font-medium">Archived meeting intelligence and transcripts.</p>
+             <h1 className="text-3xl md:text-4xl font-semibold text-foreground tracking-tight">Meetings</h1>
+             <p className="text-muted-foreground text-sm">Notes, transcripts, and tasks from your sessions.</p>
           </div>
           
           <div className="relative group w-full md:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors w-4 h-4" />
               <input 
                   type="text"
-                  placeholder="SEARCH ARCHIVES..." 
+                  placeholder="Search meetings"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full md:w-72 pl-9 pr-4 py-2.5 bg-muted/50 border border-border rounded-xl text-xs font-bold text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/30 transition-all uppercase tracking-wide"
+                  className="w-full md:w-72 pl-9 pr-4 py-2.5 bg-card border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-all"
               />
           </div>
         </div>

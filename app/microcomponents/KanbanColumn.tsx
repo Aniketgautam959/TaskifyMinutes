@@ -23,7 +23,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ title, accent, bg, tasks, o
       <div className="flex items-center justify-between px-2 shrink-0">
         <div className="flex items-center gap-3">
           <div className={`w-1 h-3.5 rounded-full ${accent}`}></div>
-          <span className="font-black text-[10px] uppercase tracking-[0.3em] text-foreground">
+          <span className="text-sm font-medium text-foreground">
             {title}
           </span>
         </div>

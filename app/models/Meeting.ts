@@ -14,6 +14,7 @@ export interface IMeeting {
   category: string;
   tasks: mongoose.Types.ObjectId[];
   user: mongoose.Types.ObjectId;
+  shareToken?: string;
 }
 
 const MeetingSchema = new Schema<IMeeting>(
@@ -38,8 +39,13 @@ const MeetingSchema = new Schema<IMeeting>(
     category: { type: String },
     tasks: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    shareToken: { type: String, unique: true, sparse: true },
   },
   { timestamps: true }
 );
+
+if (models.Meeting && !models.Meeting.schema.path('shareToken')) {
+  mongoose.deleteModel('Meeting');
+}
 
 export const Meeting: Model<IMeeting> = models.Meeting || mongoose.model<IMeeting>('Meeting', MeetingSchema);

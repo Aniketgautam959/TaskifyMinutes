@@ -1,10 +1,12 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Meeting, Task } from '../types';
 import SuggestedTask from '../microcomponents/SuggestedTask';
-import { Calendar, Clock, Download, FileText, Loader, ArrowLeft, Trash2, Maximize2, MoreHorizontal, Sparkles, Video } from 'lucide-react';
+import { Calendar, Clock, Download, FileText, Loader, ArrowLeft, Trash2, Maximize2, MoreHorizontal, Sparkles, Video, Link2 } from 'lucide-react';
 import { getMeetingById, deleteMeeting } from '../services/api/meetings';
+import { timestampToSeconds } from '../lib/timestamp';
+import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 
 interface MeetingViewProps {
@@ -26,6 +28,9 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
   const [transcriptSignedUrl, setTranscriptSignedUrl] = useState<string | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [activeLine, setActiveLine] = useState<number | null>(null);
+  const mediaRef = useRef<HTMLMediaElement>(null);
 
   const fetchMeeting = async (showLoading = true) => {
     try {
@@ -55,6 +60,34 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
       console.error('Failed to delete meeting:', err);
       alert('Failed to delete meeting. Please try again.');
       setIsDeleting(false);
+    }
+  };
+
+  const seekToTimestamp = (timestamp: string, line: number) => {
+    const seconds = timestampToSeconds(timestamp);
+    const media = mediaRef.current;
+    if (seconds === null || !media) return;
+    media.currentTime = seconds;
+    setActiveLine(line);
+    void media.play().catch(() => undefined);
+  };
+
+  const handleShare = async () => {
+    if (!meeting) return;
+    setIsSharing(true);
+    try {
+      const response = await fetch(`/api/meetings/${meeting.id}/share`, { method: 'POST' });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Could not create a share link');
+      }
+      await navigator.clipboard.writeText(data.url);
+      toast.success('Share link copied. Anyone with the link can read the minutes.');
+    } catch (err) {
+      console.error('Failed to share meeting:', err);
+      toast.error(err instanceof Error ? err.message : 'Could not copy the share link');
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -311,17 +344,25 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
         <div className="flex items-center gap-2 self-end md:self-auto">
           <button
             onClick={handleDeleteClick}
-            className="px-3 md:px-4 py-2 bg-red-500/10 text-red-600 dark:text-red-500 border border-red-500/20 rounded-lg text-[11px] font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-2"
+            className="px-3 md:px-4 py-2 bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 rounded-lg text-sm font-medium hover:bg-red-500/15 transition-colors flex items-center gap-2"
           >
             <Trash2 size={14} />
             <span className="hidden md:inline">Delete</span>
           </button>
           <button
+            onClick={handleShare}
+            disabled={isSharing}
+            className="px-3 md:px-4 py-2 bg-card text-foreground border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            <Link2 size={14} />
+            <span className="hidden md:inline">{isSharing ? 'Copying...' : 'Share'}</span>
+          </button>
+          <button
             onClick={handleExport}
-            className="px-3 md:px-4 py-2 bg-muted text-muted-foreground border border-border rounded-lg text-[11px] font-black uppercase tracking-wider hover:bg-muted/80 hover:text-foreground transition-all flex items-center gap-2"
+            className="px-3 md:px-4 py-2 bg-card text-foreground border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors flex items-center gap-2"
           >
             <Download size={14} />
-            <span className="hidden md:inline">Export</span>
+            <span className="hidden md:inline">PDF</span>
           </button>
         </div>
       </header>
@@ -331,9 +372,9 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
           {videoSignedUrl && (
             <div className="shrink-0 overflow-hidden rounded-xl border border-border bg-black">
               {meeting.videoFile?.filetype === 'audio' ? (
-                <audio src={videoSignedUrl} controls className="w-full px-4 py-3" />
+                <audio ref={mediaRef} src={videoSignedUrl} controls className="w-full px-4 py-3" />
               ) : (
-                <video src={videoSignedUrl} controls playsInline className="max-h-80 w-full bg-black" />
+                <video ref={mediaRef} src={videoSignedUrl} controls playsInline className="max-h-80 w-full bg-black" />
               )}
             </div>
           )}
@@ -398,15 +439,28 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
             <div className="flex-1 overflow-visible lg:overflow-y-auto p-4 custom-scrollbar bg-background/50">
               {activeContent === 'Transcript' && (
                 <div className="space-y-3">
-                  {meeting.transcript && meeting.transcript.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item, i) => (
-                    <div key={i} className="group p-3 md:p-4 rounded-xl border border-border/40 bg-card hover:bg-muted/50 transition-colors">
+                  {videoSignedUrl && (
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Click a line to jump in the recording</p>
+                  )}
+                  {meeting.transcript && meeting.transcript.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item, i) => {
+                    const line = (currentPage - 1) * itemsPerPage + i;
+                    const canSeek = Boolean(videoSignedUrl) && timestampToSeconds(item.timestamp) !== null;
+                    return (
+                    <button
+                      key={line}
+                      type="button"
+                      disabled={!canSeek}
+                      onClick={() => seekToTimestamp(item.timestamp, line)}
+                      className={`group w-full p-3 md:p-4 rounded-xl border bg-card text-left transition-colors disabled:cursor-default ${activeLine === line ? 'border-primary/50 bg-primary/5' : 'border-border/40 hover:bg-muted/50'} ${canSeek ? 'cursor-pointer' : ''}`}
+                    >
                       <div className="flex items-baseline gap-3 mb-1">
                         <span className="text-xs font-bold text-primary min-w-[3rem]">{item.speakername}</span>
                         <span className="text-[10px] font-mono text-muted-foreground">{item.timestamp}</span>
                       </div>
                       <p className="text-[13px] text-foreground leading-relaxed">{item.content}</p>
-                    </div>
-                  ))}
+                    </button>
+                    );
+                  })}
                   {(!meeting.transcript || meeting.transcript.length === 0) && (
                     <div className="text-center py-20 text-muted-foreground font-mono text-xs">No Transcript available</div>
                   )}
