@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/app/lib/db";
 import { FileModel } from "@/app/models/File";
 import { User } from "@/app/models/User";
 import { auth } from "@clerk/nextjs/server";
+import { resolveMediaMime } from "@/app/services/logic/summarize_media";
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,11 +50,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Determine file type
+    const mediaMime = resolveMediaMime(file.name, file.type);
     let filetype: 'text' | 'video' | 'image' | 'audio' = 'text';
-    if (file.type.startsWith('video/')) filetype = 'video';
+    if (mediaMime?.startsWith('video/')) filetype = 'video';
     else if (file.type.startsWith('image/')) filetype = 'image';
-    else if (file.type.startsWith('audio/')) filetype = 'audio';
+    else if (mediaMime?.startsWith('audio/')) filetype = 'audio';
     
     // Create File document
     const fileDoc = new FileModel({

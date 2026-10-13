@@ -22,9 +22,11 @@ const MEDIA_MIME_BY_EXTENSION: Record<string, string> = {
   aac: "audio/aac",
   ogg: "audio/ogg",
   opus: "audio/ogg",
-  webm: "audio/webm",
+  webm: "video/webm",
   mp4: "video/mp4",
+  m4v: "video/mp4",
   mov: "video/quicktime",
+  mpg: "video/mpeg",
 };
 
 const MEDIA_MIME_BY_TYPE: Record<string, string> = {
@@ -42,7 +44,13 @@ const MEDIA_MIME_BY_TYPE: Record<string, string> = {
   "video/mp4": "video/mp4",
   "video/webm": "video/webm",
   "video/quicktime": "video/quicktime",
+  "video/mpeg": "video/mpeg",
+  "video/x-m4v": "video/mp4",
 };
+
+export function isVideoMime(mimeType: string) {
+  return mimeType.startsWith("video/");
+}
 
 export const MAX_RECORDING_BYTES = 50 * 1024 * 1024;
 
@@ -214,8 +222,10 @@ export async function summarizeMeetingMedia(buffer: Buffer, mimeType: string, fi
 
   const ai = new GoogleGenAI({ apiKey });
   const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-  const prompt = `Listen to this meeting recording and extract structured notes from what was actually said.
-Do not invent attendees, decisions, or tasks that are not in the audio.
+  const prompt = `${isVideoMime(mimeType)
+    ? "Watch this meeting video and extract structured notes from what was said and shown. Use speech, slides, and shared screens."
+    : "Listen to this meeting recording and extract structured notes from what was actually said."}
+Do not invent attendees, decisions, or tasks that are not in the recording.
 
 Return:
 - a short title

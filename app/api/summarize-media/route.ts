@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const mimeType = resolveMediaMime(file.name, file.type);
     if (!mimeType) {
       return NextResponse.json(
-        { error: "Use an audio or video file such as MP3, WAV, M4A, MP4, WebM, or MOV." },
+        { error: "Use an audio or video file such as MP3, WAV, MP4, MOV, or WebM." },
         { status: 400 }
       );
     }

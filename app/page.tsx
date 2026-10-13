@@ -104,9 +104,9 @@ const App: React.FC = () => {
 
   const selectRecording = (file: File | null) => {
     if (!file) return;
-    const allowed = /\.(mp3|wav|m4a|aac|ogg|opus|webm|mp4|mov|mpeg)$/i.test(file.name) || file.type.startsWith('audio/') || file.type.startsWith('video/');
+    const allowed = /\.(mp3|wav|m4a|aac|ogg|opus|webm|mp4|m4v|mov|mpeg|mpg)$/i.test(file.name) || file.type.startsWith('audio/') || file.type.startsWith('video/');
     if (!allowed) {
-      setError('Use an audio or video file such as MP3, WAV, M4A, MP4, WebM, or MOV.');
+      setError('Use an audio or video file such as MP3, WAV, MP4, MOV, or WebM.');
       return;
     }
     if (file.size > 50 * 1024 * 1024) {
@@ -261,7 +261,7 @@ const App: React.FC = () => {
                   onClick={() => { setInputMode('audio'); setError(null); }}
                   className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${inputMode === 'audio' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
                 >
-                  Audio / Recording
+                  Audio / Video
                 </button>
               </div>
               <div className="flex-1 flex flex-col p-1 rounded-3xl bg-muted/30 border border-border shadow-2xl overflow-hidden relative group hover:border-border/80 transition-colors">
@@ -283,7 +283,7 @@ const App: React.FC = () => {
                   >
                     <input
                       type="file"
-                      accept="audio/*,video/mp4,video/webm,video/quicktime,.mp3,.wav,.m4a,.aac,.ogg,.webm,.mp4,.mov"
+                      accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.webm,.mp4,.m4v,.mov,.mpeg,.mpg"
                       className="sr-only"
                       onChange={(e) => {
                         selectRecording(e.target.files?.[0] || null);
@@ -308,8 +308,8 @@ const App: React.FC = () => {
                       </div>
                     ) : (
                       <>
-                        <p className="text-sm font-semibold text-foreground">Drop a meeting recording</p>
-                        <p className="text-xs text-muted-foreground">MP3, WAV, M4A, MP4, or WebM up to 50 MB</p>
+                        <p className="text-sm font-semibold text-foreground">Drop a meeting audio or video</p>
+                        <p className="text-xs text-muted-foreground">MP3, WAV, MP4, MOV, or WebM up to 50 MB</p>
                       </>
                     )}
                   </label>

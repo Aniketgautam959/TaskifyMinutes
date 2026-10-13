@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Meeting, Task } from '../types';
 import SuggestedTask from '../microcomponents/SuggestedTask';
-import { Calendar, Clock, Download, FileText, Loader, ArrowLeft, Trash2, Maximize2, MoreHorizontal, Sparkles } from 'lucide-react';
+import { Calendar, Clock, Download, FileText, Loader, ArrowLeft, Trash2, Maximize2, MoreHorizontal, Sparkles, Video } from 'lucide-react';
 import { getMeetingById, deleteMeeting } from '../services/api/meetings';
 import jsPDF from 'jspdf';
 
@@ -328,6 +328,15 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
 
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-6 px-1 md:px-4 pb-2 overflow-y-auto lg:overflow-hidden">
         <div className="col-span-1 lg:col-span-8 flex flex-col gap-4 h-auto lg:h-full lg:overflow-hidden">
+          {videoSignedUrl && (
+            <div className="shrink-0 overflow-hidden rounded-xl border border-border bg-black">
+              {meeting.videoFile?.filetype === 'audio' ? (
+                <audio src={videoSignedUrl} controls className="w-full px-4 py-3" />
+              ) : (
+                <video src={videoSignedUrl} controls playsInline className="max-h-80 w-full bg-black" />
+              )}
+            </div>
+          )}
           <div className="shrink-0 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 relative overflow-hidden group">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-1 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
@@ -438,6 +447,28 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
         <div className="col-span-1 lg:col-span-4 h-auto lg:h-full flex flex-col gap-4 lg:overflow-hidden mt-0 lg:mt-0">
 
           {/* File Attachment Card */}
+          {meeting.videoFile && (
+            <div className="shrink-0 p-3 rounded-xl border border-border bg-card flex items-center justify-between group hover:border-border/80 transition-all">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center border border-border text-muted-foreground group-hover:text-foreground group-hover:border-foreground/20 transition-all">
+                  <Video size={18} />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-foreground line-clamp-1 max-w-[150px]" title={meeting.videoFile.gcsobjectkey}>
+                    {meeting.videoFile.filetype === 'audio' ? 'Meeting audio' : 'Meeting video'}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground font-mono">
+                    {meeting.videoFile.filesize ? (meeting.videoFile.filesize / (1024 * 1024)).toFixed(1) + ' MB' : 'Recording'}
+                  </div>
+                </div>
+              </div>
+              {videoSignedUrl && (
+                <a href={videoSignedUrl} target="_blank" rel="noreferrer" className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                  <Download size={16} />
+                </a>
+              )}
+            </div>
+          )}
           {(!meeting.videoFile && meeting.transcriptFile) && (
             <div className="shrink-0 p-3 rounded-xl border border-border bg-card flex items-center justify-between group hover:border-border/80 transition-all">
               <div className="flex items-center gap-3">
