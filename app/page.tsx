@@ -1,8 +1,9 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Github } from 'lucide-react';
+import { Github, AudioLines, X } from 'lucide-react';
 import { generateMeetingSummary } from './actions';
+import { ThemeToggle } from './components/ThemeToggle';
 
 // --- Types ---
 
@@ -39,7 +40,8 @@ const Navbar: React.FC = () => (
         <a href="#features" className="hover:text-foreground transition-colors">Features</a>
         <a href="#demo" className="hover:text-foreground transition-colors">Demo</a>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <ThemeToggle />
         <Link href="/sign-in" className="text-green-500 hover:text-green-600 text-xs font-semibold transition-colors">
           Login
         </Link>
@@ -94,21 +96,51 @@ const Footer: React.FC = () => (
 
 const App: React.FC = () => {
   const [transcript, setTranscript] = useState<string>("John: We need to finalize the Q3 budget by Thursday morning. \nSarah: I can have the draft ready by tomorrow afternoon. \nMike: Let's schedule a follow-up for Wednesday at 4 PM to review Sarah's draft. \nJohn: Perfect, I'll also assign the resource allocation task to Kevin.");
+  const [inputMode, setInputMode] = useState<'text' | 'audio'>('text');
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<SummaryResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const selectRecording = (file: File | null) => {
+    if (!file) return;
+    const allowed = /\.(mp3|wav|m4a|aac|ogg|opus|webm|mp4|mov|mpeg)$/i.test(file.name) || file.type.startsWith('audio/') || file.type.startsWith('video/');
+    if (!allowed) {
+      setError('Use an audio or video file such as MP3, WAV, M4A, MP4, WebM, or MOV.');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setError('Recording must be 50 MB or smaller.');
+      return;
+    }
+    setError(null);
+    setMediaFile(file);
+  };
+
   const handleSummarize = async () => {
-    if (!transcript.trim()) return;
+    if (inputMode === 'text' && !transcript.trim()) return;
+    if (inputMode === 'audio' && !mediaFile) return;
     setLoading(true);
     setError(null);
+    setResult(null);
 
     try {
-      const data = await generateMeetingSummary(transcript);
-      setResult(data);
+      if (inputMode === 'audio' && mediaFile) {
+        const formData = new FormData();
+        formData.append('file', mediaFile);
+        const response = await fetch('/api/summarize-media', { method: 'POST', body: formData });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to summarize this recording.');
+        }
+        setResult(data);
+      } else {
+        const data = await generateMeetingSummary(transcript);
+        setResult(data);
+      }
     } catch (err) {
       console.error("AI Error:", err);
-      setError("Unable to process transcript. Please ensure the API key is active and configured correctly.");
+      setError(err instanceof Error ? err.message : "Unable to process this meeting. Please ensure the API key is active and configured correctly.");
     } finally {
       setLoading(false);
     }
@@ -216,20 +248,79 @@ const App: React.FC = () => {
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 Live Demo
               </h3>
+              <div className="mb-4 inline-flex rounded-full border border-border bg-muted/40 p-1">
+                <button
+                  type="button"
+                  onClick={() => { setInputMode('text'); setError(null); }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${inputMode === 'text' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  Transcript
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setInputMode('audio'); setError(null); }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${inputMode === 'audio' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  Audio / Recording
+                </button>
+              </div>
               <div className="flex-1 flex flex-col p-1 rounded-3xl bg-muted/30 border border-border shadow-2xl overflow-hidden relative group hover:border-border/80 transition-colors">
-                <textarea
-                  className="flex-1 w-full bg-transparent p-6 text-foreground resize-none outline-none font-mono text-sm leading-relaxed scrollbar-hide "
-                  value={transcript}
-                  onChange={(e) => setTranscript(e.target.value)}
-                  placeholder="Paste your meeting transcript here..."
-                />
+                {inputMode === 'text' ? (
+                  <textarea
+                    className="flex-1 w-full bg-transparent p-6 text-foreground resize-none outline-none font-mono text-sm leading-relaxed scrollbar-hide "
+                    value={transcript}
+                    onChange={(e) => setTranscript(e.target.value)}
+                    placeholder="Paste your meeting transcript here..."
+                  />
+                ) : (
+                  <label
+                    className="flex-1 m-3 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-background/40 px-6 text-center cursor-pointer hover:border-foreground/30 transition-colors"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      selectRecording(e.dataTransfer.files?.[0] || null);
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept="audio/*,video/mp4,video/webm,video/quicktime,.mp3,.wav,.m4a,.aac,.ogg,.webm,.mp4,.mov"
+                      className="sr-only"
+                      onChange={(e) => {
+                        selectRecording(e.target.files?.[0] || null);
+                        e.target.value = '';
+                      }}
+                    />
+                    <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex items-center justify-center text-foreground">
+                      <AudioLines className="w-5 h-5" />
+                    </div>
+                    {mediaFile ? (
+                      <div className="flex items-center gap-2 max-w-full">
+                        <span className="text-sm font-semibold text-foreground truncate">{mediaFile.name}</span>
+                        <span className="text-xs text-muted-foreground shrink-0">{(mediaFile.size / (1024 * 1024)).toFixed(1)} MB</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMediaFile(null); }}
+                          className="text-muted-foreground hover:text-foreground"
+                          aria-label="Remove recording"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm font-semibold text-foreground">Drop a meeting recording</p>
+                        <p className="text-xs text-muted-foreground">MP3, WAV, M4A, MP4, or WebM up to 50 MB</p>
+                      </>
+                    )}
+                  </label>
+                )}
                 <div className="p-4 backdrop-blur-md flex items-center justify-end">
                   <button
                     onClick={handleSummarize}
-                    disabled={loading || !transcript.trim()}
-                    className="w-full sm:w-auto px-4 py-2 bg-green-500/20 hover:bg-green-600/20 border border-green-500/40 rounded-full text-sm font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2 text-green-400 cursor-pointer"
+                    disabled={loading || (inputMode === 'text' ? !transcript.trim() : !mediaFile)}
+                    className="w-full sm:w-auto px-4 py-2 bg-green-500/20 hover:bg-green-600/20 border border-green-500/40 rounded-full text-sm font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2 text-green-400 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? 'Processing...' : 'Analyze Text'}
+                    {loading ? 'Processing...' : inputMode === 'audio' ? 'Summarize recording' : 'Analyze Text'}
                     {!loading && <span className="text-xs">→</span>}
                   </button>
                 </div>

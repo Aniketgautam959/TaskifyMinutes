@@ -6,6 +6,7 @@ import { User } from '@/app/models/User';
 import { FileModel } from '@/app/models/File';
 import { auth } from '@clerk/nextjs/server';
 import { processMeetingTranscript } from '@/app/services/logic/analyse_transcript';
+import { resolveMediaMime, summarizeMeetingMedia } from '@/app/services/logic/summarize_media';
 import { getDownloadUrl, uploadFileToGCS } from '@/app/services/logic/gcs_upload';
 import { Types } from 'mongoose';
 
@@ -39,8 +40,9 @@ export async function POST(req: Request) {
     }
 
     const file = formData.get('file') as File | null;
+    const mediaMime = file && file.size > 0 ? resolveMediaMime(file.name, file.type) : null;
     
-    if (file && file.size > 0) {
+    if (file && file.size > 0 && !mediaMime) {
       transcriptText = await file.text();
 
       // Only upload if no ID was provided, as we want to save this new file
@@ -88,12 +90,25 @@ export async function POST(req: Request) {
     //   }
     // }
 
-    if (!transcriptText) {
+    let analysisResult;
+    if (mediaMime && file) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const mediaResult = await summarizeMeetingMedia(buffer, mediaMime, file.name);
+      analysisResult = {
+        title: mediaResult.title,
+        summary: mediaResult.summary,
+        transcript: mediaResult.transcript,
+        mom: mediaResult.mom,
+        tags: mediaResult.tags,
+        category: mediaResult.category,
+        tasks: mediaResult.detailedTasks,
+        confidence_level: mediaResult.confidence_level,
+      };
+    } else if (!transcriptText) {
       return NextResponse.json({ error: 'Transcript content is missing' }, { status: 400 });
+    } else {
+      analysisResult = await processMeetingTranscript(transcriptText);
     }
-
-    // 1. Process transcript with AI
-    const analysisResult = await processMeetingTranscript(transcriptText);
     console.log("========== Analysis result==========");
 
     // 2. Create Meeting
@@ -110,9 +125,11 @@ export async function POST(req: Request) {
       tags: analysisResult.tags,
       category: requestCategory || analysisResult.category,
       confidenceLevel: analysisResult.confidence_level,
-      // Fix 2: Explicitly cast to ObjectId and verify string is not empty
-      transcriptFile: (transcriptFileId && Types.ObjectId.isValid(transcriptFileId)) 
-        ? new Types.ObjectId(transcriptFileId) 
+      transcriptFile: !mediaMime && transcriptFileId && Types.ObjectId.isValid(transcriptFileId)
+        ? new Types.ObjectId(transcriptFileId)
+        : undefined,
+      videoFile: mediaMime && transcriptFileId && Types.ObjectId.isValid(transcriptFileId)
+        ? new Types.ObjectId(transcriptFileId)
         : undefined,
       user: user._id,
       tasks: [],

@@ -187,7 +187,7 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
                         placeholder={transcriptFile ? "File selected. Remove file to paste text." : "Paste meeting transcript here..."}
                       />
                       <div className={`flex items-center gap-3 ${transcriptText ? 'opacity-50 pointer-events-none' : ''}`}>
-                        <span className="text-[10px] text-muted-foreground font-bold uppercase">{transcriptFile ? 'Selected:' : 'Or upload txt/md'}</span>
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase">{transcriptFile ? 'Selected:' : 'Or upload audio, recording, or txt'}</span>
                         {transcriptFile ? (
                            <div className="flex items-center gap-2 bg-muted border border-border rounded px-2 py-1">
                                 <span className="text-xs text-foreground font-bold truncate max-w-[150px]">{transcriptFile.name}</span>
@@ -196,7 +196,7 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
                         ) : (
                            <input 
                              type="file" 
-                             accept=".txt,.md" 
+                             accept=".txt,.md,audio/*,video/mp4,video/webm,video/quicktime,.mp3,.wav,.m4a,.aac,.ogg,.mp4,.mov,.webm" 
                              onChange={handleTranscriptFileChange}
                              disabled={!!transcriptText}
                              className="text-xs text-muted-foreground file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer disabled:cursor-not-allowed"
