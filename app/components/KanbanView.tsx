@@ -29,7 +29,7 @@ const KanbanView: React.FC = () => {
       setTasks(activeTasks);
     } catch (err) {
       console.error('Failed to fetch tasks:', err);
-      setError('Failed to load tasks');
+      setError('Tasks could not load. The database is not reachable yet.');
     } finally {
       setIsLoading(false);
     }

@@ -18,11 +18,20 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
 		throw new Error('MONGODB_URI is not set')
 	}
 
-	GLOBAL_MONGO.mongooseConn = mongoose.connect(uri, {
+	const connection = mongoose.connect(uri, {
 		bufferCommands: false,
+		serverSelectionTimeoutMS: 8000,
+		family: 4,
 	})
 
-	return GLOBAL_MONGO.mongooseConn
+	GLOBAL_MONGO.mongooseConn = connection
+	connection.catch(() => {
+		if (GLOBAL_MONGO.mongooseConn === connection) {
+			GLOBAL_MONGO.mongooseConn = null
+		}
+	})
+
+	return connection
 }
 
 

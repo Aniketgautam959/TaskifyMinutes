@@ -35,7 +35,7 @@ const MeetingsTable: React.FC<MeetingsTableProps> = ({ onSelectMeeting }) => {
         setMeetings(data);
       } catch (err) {
         console.error('Failed to fetch meetings:', err);
-        setError('Failed to load meetings');
+        setError('Meetings could not load. The database is not reachable yet.');
       } finally {
         setIsLoading(false);
       }
