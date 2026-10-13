@@ -30,7 +30,8 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [activeLine, setActiveLine] = useState<number | null>(null);
-  const mediaRef = useRef<HTMLMediaElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const fetchMeeting = async (showLoading = true) => {
     try {
@@ -65,7 +66,7 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
 
   const seekToTimestamp = (timestamp: string, line: number) => {
     const seconds = timestampToSeconds(timestamp);
-    const media = mediaRef.current;
+    const media = audioRef.current ?? videoRef.current;
     if (seconds === null || !media) return;
     media.currentTime = seconds;
     setActiveLine(line);
@@ -372,9 +373,9 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
           {videoSignedUrl && (
             <div className="shrink-0 overflow-hidden rounded-xl border border-border bg-black">
               {meeting.videoFile?.filetype === 'audio' ? (
-                <audio ref={mediaRef} src={videoSignedUrl} controls className="w-full px-4 py-3" />
+                <audio ref={audioRef} src={videoSignedUrl} controls className="w-full px-4 py-3" />
               ) : (
-                <video ref={mediaRef} src={videoSignedUrl} controls playsInline className="max-h-80 w-full bg-black" />
+                <video ref={videoRef} src={videoSignedUrl} controls playsInline className="max-h-80 w-full bg-black" />
               )}
             </div>
           )}
