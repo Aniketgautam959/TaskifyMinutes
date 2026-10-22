@@ -7,8 +7,17 @@ import { FileModel } from '@/app/models/File';
 import { auth } from '@clerk/nextjs/server';
 import { processMeetingTranscript } from '@/app/services/logic/analyse_transcript';
 import { resolveMediaMime, summarizeMeetingMedia } from '@/app/services/logic/summarize_media';
-import { getDownloadUrl, uploadFileToGCS } from '@/app/services/logic/gcs_upload';
+import { saveRecording } from '@/app/services/logic/recording_store';
 import { Types } from 'mongoose';
+
+function formatDuration(totalSeconds: number) {
+  if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return '0m';
+  const minutes = Math.max(1, Math.round(totalSeconds / 60));
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours}h ${rest}m` : `${hours}h`;
+}
 
 export async function POST(req: Request) {
   try {
@@ -48,15 +57,16 @@ export async function POST(req: Request) {
       // Only upload if no ID was provided, as we want to save this new file
       if (!transcriptFileId) {
         try {
-          console.log("========== Uploading file to GCS==========");
+          console.log("========== Saving transcript file==========");
           const arrayBuffer = await file.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
-          const uploadResult = await uploadFileToGCS(buffer, file.name, file.type || 'text/plain');
+          const uploadResult = await saveRecording(buffer, file.name, file.type || 'text/plain', String(user._id));
 
           if (uploadResult) {
-            console.log("========== File uploaded to GCS==========");
+            console.log("========== File saved==========");
             const newFile = new FileModel({
               gcsobjectkey: uploadResult.fileName,
+              storageId: uploadResult.storageId,
               filesize: file.size,
               user: user._id,
               filetype: 'text',
@@ -75,6 +85,15 @@ export async function POST(req: Request) {
     const dateStr = formData.get('date') as string;
     if (dateStr) requestDate = new Date(dateStr);
     requestCategory = (formData.get('category') as string) || '';
+    const durationSeconds = Number(formData.get('duration'));
+
+    const screenshotIds = formData.getAll('screenshotIds').map((value) => String(value));
+    const screenshotSeconds = formData.getAll('screenshotSeconds').map((value) => Number(value));
+    const screenshots = screenshotIds.flatMap((id, index) => {
+      if (!Types.ObjectId.isValid(id)) return [];
+      const seconds = screenshotSeconds[index];
+      return [{ file: new Types.ObjectId(id), seconds: Number.isFinite(seconds) ? seconds : 0 }];
+    });
 
     // // If fileId was provided but no text yet, fetch content from GCS
     // if (transcriptFileId && !transcriptText) {
@@ -118,7 +137,7 @@ export async function POST(req: Request) {
       title: requestTitle || analysisResult.title,
       summary: analysisResult.summary,
       date: requestDate ? requestDate : new Date(),
-      duration: '0m',
+      duration: formatDuration(durationSeconds),
       transcript: analysisResult.transcript,
       mom: analysisResult.mom,
       currentStatus: 'Completed',
@@ -133,6 +152,7 @@ export async function POST(req: Request) {
         : undefined,
       user: user._id,
       tasks: [],
+      screenshots,
     });
 
     const savedMeeting = await newMeeting.save();

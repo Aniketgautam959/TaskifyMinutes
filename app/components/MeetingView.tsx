@@ -1,11 +1,12 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Meeting, Task } from '../types';
 import SuggestedTask from '../microcomponents/SuggestedTask';
 import { Calendar, Clock, Download, FileText, Loader, ArrowLeft, Trash2, Maximize2, MoreHorizontal, Sparkles, Video, Link2 } from 'lucide-react';
 import { getMeetingById, deleteMeeting } from '../services/api/meetings';
 import { timestampToSeconds } from '../lib/timestamp';
+import { formatSpokenTime, speakerShare } from '../lib/speakerShare';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 
@@ -14,8 +15,18 @@ interface MeetingViewProps {
   onAddTask: (task: Omit<Task, 'id' | 'status'>) => void;
 }
 
+type SeriesMeeting = {
+  id: string;
+  title: string;
+  date: string;
+  decisions: string[];
+  openTasks: { title: string; status: string }[];
+  speakers?: { name: string; time: string }[];
+};
+
 const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +43,9 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
   const [activeLine, setActiveLine] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const soughtRef = useRef(false);
+  const [series, setSeries] = useState<{ category: string; meetings: SeriesMeeting[] } | null>(null);
+  const [screenShots, setScreenShots] = useState<{ url: string; seconds: number }[]>([]);
 
   const fetchMeeting = async (showLoading = true) => {
     try {
@@ -83,10 +97,34 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
         throw new Error(data.error || 'Could not create a share link');
       }
       await navigator.clipboard.writeText(data.url);
-      toast.success('Share link copied. Anyone with the link can read the minutes.');
+      toast.success('Share link copied. Salaries, amounts, and passwords stay off the public page.');
     } catch (err) {
       console.error('Failed to share meeting:', err);
       toast.error(err instanceof Error ? err.message : 'Could not copy the share link');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleShareMoment = async (event: React.MouseEvent, timestamp: string) => {
+    event.stopPropagation();
+    if (!meeting) return;
+    const seconds = timestampToSeconds(timestamp);
+    if (seconds === null) {
+      toast.error('This line has no timestamp to share.');
+      return;
+    }
+    setIsSharing(true);
+    try {
+      const response = await fetch(`/api/meetings/${meeting.id}/share`, { method: 'POST' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not create a share link');
+      const url = new URL(data.url);
+      url.searchParams.set('t', String(seconds));
+      await navigator.clipboard.writeText(url.toString());
+      toast.success('Moment link copied. It opens on this line.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not copy the moment link');
     } finally {
       setIsSharing(false);
     }
@@ -272,6 +310,33 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
   }, [meetingId]);
 
   useEffect(() => {
+    if (!meeting?.id) return;
+    let cancelled = false;
+    fetch(`/api/meetings/${meeting.id}/series`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setSeries(data);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [meeting?.id]);
+
+  useEffect(() => {
+    const raw = searchParams.get("t");
+    if (!raw || soughtRef.current || !videoSignedUrl) return;
+    const seconds = Number(raw);
+    const media = audioRef.current ?? videoRef.current;
+    if (!Number.isFinite(seconds) || !media) return;
+    soughtRef.current = true;
+    media.currentTime = seconds;
+    const line = meeting?.transcript?.findIndex((item) => timestampToSeconds(item.timestamp) === seconds) ?? -1;
+    if (line >= 0) setActiveLine(line);
+    void media.play().catch(() => undefined);
+  }, [searchParams, videoSignedUrl, meeting]);
+
+  useEffect(() => {
     // Transcript limit logic removed in favor of pagination
     // if (meeting?.transcript) {
     //   setTranscriptLimit(meeting.transcript.length >= 10 ? 10 : meeting.transcript.length);
@@ -287,6 +352,22 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
         .catch(err => console.error("Failed to fetch video URL", err));
     } else {
       setVideoSignedUrl(null);
+    }
+
+    const shots = meeting?.screenshots || [];
+    if (shots.length === 0) {
+      setScreenShots([]);
+    } else {
+      Promise.all(shots.map(async (shot) => {
+        const fileId = shot.file?._id;
+        if (!fileId) return null;
+        const response = await fetch(`/api/documents/download?fileId=${fileId}`);
+        const data = await response.json();
+        if (!data.url) return null;
+        return { url: data.url as string, seconds: shot.seconds || 0 };
+      }))
+        .then((items) => setScreenShots(items.filter((item): item is { url: string; seconds: number } => Boolean(item))))
+        .catch(() => setScreenShots([]));
     }
 
     if (meeting?.transcriptFile?._id) {
@@ -370,6 +451,15 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
 
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-6 px-1 md:px-4 pb-2 overflow-y-auto lg:overflow-hidden">
         <div className="col-span-1 lg:col-span-8 flex flex-col gap-4 h-auto lg:h-full lg:overflow-hidden">
+          {screenShots[0] && (
+            <div className="shrink-0 overflow-hidden rounded-xl border border-border">
+              <img
+                src={screenShots[0].url}
+                alt="Meeting cover"
+                className="aspect-video max-h-72 w-full object-cover"
+              />
+            </div>
+          )}
           {videoSignedUrl && (
             <div className="shrink-0 overflow-hidden rounded-xl border border-border bg-black">
               {meeting.videoFile?.filetype === 'audio' ? (
@@ -390,6 +480,43 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
               {meeting.summary}
             </p>
           </div>
+
+          {series && series.meetings.length > 0 && (
+            <div className="shrink-0 rounded-xl border border-border bg-card p-4">
+              <p className="text-sm font-medium">Before the next {series.category} call</p>
+              {series.meetings[0] && (
+                <button
+                  type="button"
+                  onClick={() => router.push(`/meetings/${series.meetings[0].id}`)}
+                  className="mt-3 w-full rounded-xl bg-background px-3 py-3 text-left hover:bg-muted"
+                >
+                  <p className="text-xs text-muted-foreground">Last time · {new Date(series.meetings[0].date).toLocaleDateString()}</p>
+                  <p className="mt-1 text-sm font-medium">{series.meetings[0].title}</p>
+                  {series.meetings[0].decisions[0] && <p className="mt-2 text-xs text-foreground">Decision: {series.meetings[0].decisions[0]}</p>}
+                  {series.meetings[0].openTasks[0] && <p className="mt-1 text-xs text-muted-foreground">Still open: {series.meetings[0].openTasks[0].title}</p>}
+                  {series.meetings[0].speakers && series.meetings[0].speakers.length > 0 && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Spoke most: {series.meetings[0].speakers.map((speaker) => `${speaker.name} ${speaker.time}`).join(" · ")}
+                    </p>
+                  )}
+                </button>
+              )}
+              {series.meetings.length > 1 && (
+                <div className="mt-3 space-y-2">
+                  {series.meetings.slice(1).map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => router.push(`/meetings/${item.id}`)}
+                      className="w-full rounded-xl border border-border px-3 py-2 text-left text-xs hover:bg-muted"
+                    >
+                      {item.title}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="h-auto lg:h-full lg:flex-1 flex flex-col min-h-0 bg-muted/30 border border-border rounded-xl lg:overflow-hidden">
             <div className="flex items-center justify-between px-2 md:px-4 py-2 border-b border-border bg-muted/50">
@@ -447,19 +574,27 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
                     const line = (currentPage - 1) * itemsPerPage + i;
                     const canSeek = Boolean(videoSignedUrl) && timestampToSeconds(item.timestamp) !== null;
                     return (
-                    <button
+                    <div
                       key={line}
-                      type="button"
-                      disabled={!canSeek}
-                      onClick={() => seekToTimestamp(item.timestamp, line)}
-                      className={`group w-full p-3 md:p-4 rounded-xl border bg-card text-left transition-colors disabled:cursor-default ${activeLine === line ? 'border-primary/50 bg-primary/5' : 'border-border/40 hover:bg-muted/50'} ${canSeek ? 'cursor-pointer' : ''}`}
+                      onClick={() => canSeek && seekToTimestamp(item.timestamp, line)}
+                      className={`group w-full p-3 md:p-4 rounded-xl border bg-card text-left transition-colors ${activeLine === line ? 'border-primary/50 bg-primary/5' : 'border-border/40 hover:bg-muted/50'} ${canSeek ? 'cursor-pointer' : ''}`}
                     >
-                      <div className="flex items-baseline gap-3 mb-1">
-                        <span className="text-xs font-bold text-primary min-w-[3rem]">{item.speakername}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground">{item.timestamp}</span>
+                      <div className="flex items-baseline justify-between gap-3 mb-1">
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-xs font-bold text-primary min-w-[3rem]">{item.speakername}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{item.timestamp}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(event) => handleShareMoment(event, item.timestamp)}
+                          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+                        >
+                          <Link2 size={12} />
+                          Moment
+                        </button>
                       </div>
                       <p className="text-[13px] text-foreground leading-relaxed">{item.content}</p>
-                    </button>
+                    </div>
                     );
                   })}
                   {(!meeting.transcript || meeting.transcript.length === 0) && (
@@ -544,6 +679,39 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
                   <Download size={16} />
                 </a>
               )}
+            </div>
+          )}
+
+          {screenShots.length > 0 && (
+            <div className="shrink-0 rounded-xl border border-border bg-card p-4">
+              <p className="text-sm font-medium">Shared screen</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {screenShots.map((shot) => {
+                  const minutes = Math.floor(shot.seconds / 60);
+                  const rest = shot.seconds % 60;
+                  const clock = `${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
+                  return (
+                    <a key={`${shot.url}-${clock}`} href={shot.url} target="_blank" rel="noreferrer" className="block">
+                      <img src={shot.url} alt={`Shared screen at ${clock}`} className="aspect-video w-full rounded-lg border border-border object-cover" />
+                      <p className="mt-1 text-[10px] text-muted-foreground">{clock}</p>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {meeting.transcript?.length > 0 && (
+            <div className="shrink-0 rounded-xl border border-border bg-card p-4">
+              <p className="text-sm font-medium">Who spoke</p>
+              <div className="mt-3 space-y-2">
+                {speakerShare(meeting.transcript).map((speaker) => (
+                  <div key={speaker.name} className="flex items-center justify-between gap-3 text-sm">
+                    <span>{speaker.name}</span>
+                    <span className="text-muted-foreground">{formatSpokenTime(speaker.seconds)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

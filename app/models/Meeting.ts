@@ -15,6 +15,7 @@ export interface IMeeting {
   tasks: mongoose.Types.ObjectId[];
   user: mongoose.Types.ObjectId;
   shareToken?: string;
+  screenshots?: { file: mongoose.Types.ObjectId; seconds: number }[];
 }
 
 const MeetingSchema = new Schema<IMeeting>(
@@ -40,11 +41,15 @@ const MeetingSchema = new Schema<IMeeting>(
     tasks: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     shareToken: { type: String, unique: true, sparse: true },
+    screenshots: [{
+      file: { type: Schema.Types.ObjectId, ref: 'File' },
+      seconds: { type: Number, default: 0 },
+    }],
   },
   { timestamps: true }
 );
 
-if (models.Meeting && !models.Meeting.schema.path('shareToken')) {
+if (models.Meeting && (!models.Meeting.schema.path('shareToken') || !models.Meeting.schema.path('screenshots'))) {
   mongoose.deleteModel('Meeting');
 }
 

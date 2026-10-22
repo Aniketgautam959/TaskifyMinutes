@@ -214,6 +214,67 @@ async function waitUntilActive(ai: GoogleGenAI, uploaded: { name?: string; uri?:
   return current;
 }
 
+function isTransientModelError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error || "");
+  const status =
+    typeof error === "object" && error && "status" in error
+      ? Number((error as { status?: number }).status)
+      : NaN;
+
+  return (
+    status === 503 ||
+    status === 429 ||
+    /UNAVAILABLE|high demand|try again later|RESOURCE_EXHAUSTED|rate limit/i.test(message)
+  );
+}
+
+function modelCandidates(primary: string): string[] {
+  const fallbacks = (process.env.GEMINI_FALLBACK_MODELS || "gemini-2.5-flash,gemini-2.0-flash")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  return [...new Set([primary, ...fallbacks])];
+}
+
+async function generateWithRetry(
+  ai: GoogleGenAI,
+  models: string[],
+  contents: Array<ReturnType<typeof createPartFromText> | ReturnType<typeof createPartFromUri>>,
+) {
+  const maxAttemptsPerModel = 3;
+  let lastError: unknown;
+
+  for (const model of models) {
+    for (let attempt = 1; attempt <= maxAttemptsPerModel; attempt++) {
+      try {
+        console.log(`Gemini generateContent model=${model} attempt=${attempt}`);
+        return await ai.models.generateContent({
+          model,
+          contents,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema,
+          },
+        });
+      } catch (error) {
+        lastError = error;
+        if (!isTransientModelError(error) || attempt === maxAttemptsPerModel) {
+          break;
+        }
+        const delayMs = 1500 * 2 ** (attempt - 1);
+        console.warn(`Gemini ${model} busy (${String((error as { status?: number }).status || "transient")}). Retrying in ${delayMs}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+    console.warn(`Gemini model ${model} unavailable; trying next fallback if any.`);
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Gemini is temporarily unavailable. Please try again in a minute.");
+}
+
 export async function summarizeMeetingMedia(buffer: Buffer, mimeType: string, filename: string): Promise<MediaSummaryResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -221,7 +282,7 @@ export async function summarizeMeetingMedia(buffer: Buffer, mimeType: string, fi
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const models = modelCandidates(process.env.GEMINI_MODEL || "gemini-2.5-flash");
   const prompt = `${isVideoMime(mimeType)
     ? "Watch this meeting video and extract structured notes from what was said and shown. Use speech, slides, and shared screens."
     : "Listen to this meeting recording and extract structured notes from what was actually said."}
@@ -234,7 +295,9 @@ Return:
 - actionable tasks with High, Medium, or Low priority
 - scheduled events and their time, if any were mentioned
 - a speaker-wise transcript with approximate timestamps
-- tags, a category, and a confidence score from 0 to 100`;
+- tags, a category, and a confidence score from 0 to 100
+
+Write the title, summary, minutes, tasks, tags, category, and every transcript line in English. If the recording is in Hindi, Hinglish, or another language, translate it into clear English. Keep each speaker's name as it was spoken.`;
 
   const blob = new Blob([new Uint8Array(buffer)], { type: mimeType });
   const uploaded = await ai.files.upload({
@@ -244,17 +307,10 @@ Return:
 
   try {
     const ready = await waitUntilActive(ai, uploaded);
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: [
-        createPartFromText(prompt),
-        createPartFromUri(ready.uri || "", ready.mimeType || mimeType),
-      ],
-      config: {
-        responseMimeType: "application/json",
-        responseSchema,
-      },
-    });
+    const response = await generateWithRetry(ai, models, [
+      createPartFromText(prompt),
+      createPartFromUri(ready.uri || "", ready.mimeType || mimeType),
+    ]);
 
     const rawText = response.text;
     const jsonString = typeof rawText === "function" ? (rawText as () => string)() : String(rawText || "");

@@ -21,8 +21,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "TaskifyMinutes - Turn meetings into momentum.",
-  description: "Work and productivity platform",
+  title: "TaskifyMinutes — turn a call into minutes",
+  description:
+    "Turn a call into minutes. The decision, the open task, and who spoke stay on the same page for the next call. Hindi and Hinglish come back in English.",
 };
 
 export default function RootLayout({
@@ -36,7 +37,8 @@ export default function RootLayout({
         <ClerkProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme="light"
+            storageKey="taskify-theme"
             enableSystem={false}
             disableTransitionOnChange
           >

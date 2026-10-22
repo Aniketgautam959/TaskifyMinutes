@@ -1,10 +1,18 @@
 const MAX_RECORDING_BYTES = 50 * 1024 * 1024;
 
+export type MeetingSnap = {
+  file: File;
+  seconds: number;
+};
+
 export type MeetingCapture = {
   hadMicrophone: boolean;
   stop: () => void;
+  snap: () => Promise<MeetingSnap | null>;
   done: Promise<File>;
 };
+
+const MAX_SNAP_WIDTH = 1280;
 
 function pickRecorderMime() {
   const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
@@ -54,7 +62,16 @@ export async function startMeetingCapture(): Promise<MeetingCapture> {
     throw new Error("No meeting audio found. Share a browser tab and turn on Share tab audio.");
   }
 
-  display.getVideoTracks().forEach((track) => track.stop());
+  const videoTracks = display.getVideoTracks();
+  const preview = document.createElement("video");
+  preview.muted = true;
+  preview.playsInline = true;
+  preview.srcObject = new MediaStream(videoTracks);
+  preview.style.cssText = "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none";
+  document.body.appendChild(preview);
+  if (videoTracks.length > 0) {
+    await preview.play().catch(() => undefined);
+  }
 
   const audioContext = new AudioContext();
   await audioContext.resume();
@@ -79,9 +96,31 @@ export async function startMeetingCapture(): Promise<MeetingCapture> {
   });
 
   const release = () => {
+    preview.pause();
+    preview.srcObject = null;
+    preview.remove();
     display.getTracks().forEach((track) => track.stop());
     microphone?.getTracks().forEach((track) => track.stop());
     void audioContext.close().catch(() => undefined);
+  };
+
+  const startedAt = Date.now();
+  const snap = async (): Promise<MeetingSnap | null> => {
+    if (preview.readyState < 2 || preview.videoWidth < 2) return null;
+    const scale = Math.min(1, MAX_SNAP_WIDTH / preview.videoWidth);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(preview.videoWidth * scale);
+    canvas.height = Math.round(preview.videoHeight * scale);
+    const context = canvas.getContext("2d");
+    if (!context) return null;
+    context.drawImage(preview, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob) return null;
+    const seconds = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+    return {
+      file: new File([blob], `screen-${seconds}.jpg`, { type: "image/jpeg" }),
+      seconds,
+    };
   };
 
   const finish = (error?: Error) => {
@@ -121,5 +160,5 @@ export async function startMeetingCapture(): Promise<MeetingCapture> {
   tabAudio[0].addEventListener("ended", stop);
   recorder.start(1000);
 
-  return { hadMicrophone: Boolean(microphone), stop, done };
+  return { hadMicrophone: Boolean(microphone), stop, snap, done };
 }

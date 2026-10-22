@@ -123,6 +123,7 @@ export async function processMeetingTranscript(rawTranscript: string): Promise<M
         4. Categorize the meeting (e.g., specific department or topic) and provide relevant tags.
         5. Identify specific, actionable tasks. Assign a priority (High, Medium, Low) to each.
         6. Provide a confidence level (0-100) for the analysis based on the clarity of the transcript and the certainty of the extracted information.
+        7. Write the title, summary, minutes, tasks, tags, category, and every transcript line in English. If the meeting is in Hindi, Hinglish, or another language, translate it into clear English. Keep each speaker's name as it was spoken.
     `;
 
     try {

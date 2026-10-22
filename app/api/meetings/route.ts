@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/app/lib/db';
 import { Meeting } from '@/app/models/Meeting';
 import '@/app/models/Task'; // Ensure Task model is registered for population
+import '@/app/models/File';
 import { User } from '@/app/models/User';
 import { ensureUserSynced } from '@/app/lib/syncUser';
 
@@ -19,7 +20,8 @@ export async function GET() {
 
     const meetings = await Meeting.find({ user: user._id })
       .sort({ date: -1 })
-      .populate('tasks'); // Optional: populate tasks if needed here
+      .populate('tasks')
+      .populate('screenshots.file');
 
     return NextResponse.json(meetings);
   } catch (error) {

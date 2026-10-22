@@ -28,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <RefreshContext.Provider value={{ refreshKey, triggerRefresh }}>
-      <div className="min-h-screen bg-transparent selection:bg-indigo-900 selection:text-indigo-100">
+      <div className="min-h-screen bg-background selection:bg-primary selection:text-primary-foreground">
         <Navbar 
           activeTab={activeTab} 
           onTabChange={handleTabChange} 

@@ -1,7 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { uploadFileToGCS } from "../../services/logic/gcs_upload";
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -41,20 +40,8 @@ export async function POST(req: NextRequest) {
     const summary = result.response.text();
     console.log("Gemini generation successful.");
 
-    // 2. Upload to Google Cloud Storage
-    const buffer = Buffer.from(fileContent);
-    const uploadResult = await uploadFileToGCS(buffer, file.name, "text/plain");
-
-    if (!uploadResult) {
-        return NextResponse.json({ 
-            summary, 
-            message: "Summary generated, but file upload failed or skipped." 
-        });
-    }
-
     return NextResponse.json({
       summary: summary,
-      download_link: uploadResult.url,
     });
 
   } catch (error: any) {

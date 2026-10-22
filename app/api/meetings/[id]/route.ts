@@ -29,7 +29,8 @@ export async function GET(
     const meeting = await Meeting.findOne({ _id: id, user: user._id })
       .populate('tasks')
       .populate('videoFile')
-      .populate('transcriptFile');
+      .populate('transcriptFile')
+      .populate('screenshots.file');
 
     if (!meeting) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
@@ -69,7 +70,8 @@ export async function PUT(
     )
     .populate('tasks')
     .populate('videoFile')
-    .populate('transcriptFile');
+    .populate('transcriptFile')
+    .populate('screenshots.file');
 
     if (!updatedMeeting) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });

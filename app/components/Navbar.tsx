@@ -13,17 +13,17 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onNewCapture }) => {
   return (
     <header className="fixed top-0 left-0 right-0 z-[60] px-4 pt-4 md:px-8 md:pt-6 pointer-events-none transition-all duration-300">
-      <div className="max-w-[1440px] mx-auto flex items-center justify-between bg-background/90 backdrop-blur-xl py-2 px-3 md:py-3 md:px-6 rounded-2xl border border-border pointer-events-auto shadow-sm">
+      <div className="max-w-[1440px] mx-auto flex items-center justify-between bg-card/95 backdrop-blur-xl py-2 px-3 md:py-3 md:px-6 rounded-2xl border border-border pointer-events-auto shadow-sm">
         {/* Brand & Context */}
         <div className="flex items-center gap-3 md:gap-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-sm tracking-tight text-foreground leading-none hidden sm:block">TaskifyMinutes</span>
+              <span className="font-semibold text-sm tracking-tight text-foreground leading-none">TaskifyMinutes</span>
               <span className="text-[11px] text-muted-foreground mt-0.5 hidden md:block">Turn meetings into momentum.</span>
             </div>
           </div>
@@ -35,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onNewCapture })
           <div
             className={`
               absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] 
-              bg-background rounded-lg border border-border shadow-sm
+              bg-primary rounded-lg shadow-sm
               transition-transform duration-300 ease-[cubic-bezier(0.2,0,0.2,1)]
               ${activeTab === 'Tasks' ? 'translate-x-full' : 'translate-x-0'}
             `}
@@ -48,7 +48,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onNewCapture })
               className={`
                 relative z-10 flex-1 py-1.5 text-xs font-medium
                 transition-colors duration-200
-                ${activeTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/80'}
+                ${activeTab === tab ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}
               `}
             >
               {tab}
@@ -61,7 +61,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onNewCapture })
           <ThemeToggle />
           <button
             onClick={onNewCapture}
-            className="p-2 md:px-4 md:py-2 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity active:scale-[0.98] flex items-center gap-2"
+            className="p-2 md:px-4 md:py-2 bg-primary text-primary-foreground rounded-full text-sm font-semibold hover:opacity-90 transition-opacity active:scale-[0.98] flex items-center gap-2"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span className="hidden md:inline">New Meeting</span>

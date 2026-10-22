@@ -1,18 +1,11 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Github, AudioLines, X } from 'lucide-react';
+import { AudioLines, Menu, X } from 'lucide-react';
 import { generateMeetingSummary } from './actions';
 import { ThemeToggle } from './components/ThemeToggle';
 
 // --- Types ---
-
-interface FeatureProps {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  className?: string;
-}
 
 interface SummaryResult {
   summary: string;
@@ -25,69 +18,237 @@ interface SummaryResult {
 }
 // --- Sub-Components ---
 
-const Navbar: React.FC = () => (
-  <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] md:w-[80%] max-w-7xl border border-border bg-background/80 backdrop-blur-xl rounded-full shadow-2xl transition-all">
-    <div className="w-full px-6 h-16 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-          <svg className="w-4 h-4 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <span className="text-lg font-bold tracking-tight text-foreground">TaskifyMinutes</span>
-      </div>
-      <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-        <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-        <a href="#demo" className="hover:text-foreground transition-colors">Demo</a>
-      </div>
-      <div className="flex items-center gap-2 sm:gap-3">
-        <ThemeToggle />
-        <Link href="/sign-in" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-          Login
-        </Link>
-        <Link href="/sign-up" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90">
-          Sign Up
-        </Link>
-      </div>
-    </div>
-  </nav>
-);
+const navLinks = [
+  { href: '#features', label: 'Product' },
+  { href: '#demo', label: 'Demo' },
+  { href: 'https://github.com/Aniketgautam959/TaskifyMinutes', label: 'GitHub', external: true },
+];
 
-const FeatureCard: React.FC<FeatureProps> = ({ title, description, icon, className }) => (
-  <div className={`relative p-8 rounded-3xl bg-muted/30 border border-border overflow-hidden group hover:bg-muted/50 transition-all duration-500 ${className}`}>
-    <div className="absolute inset-0 bg-gradient-to-br from-foreground/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-    <div className="relative z-10 flex flex-col h-full justify-between">
-      <div>
-        <div className="mb-6 w-12 h-12 rounded-2xl bg-gradient-to-br from-foreground/10 to-foreground/5 flex items-center justify-center text-foreground/90 group-hover:scale-110 group-hover:text-foreground transition-all duration-500 shadow-lg shadow-black/5 dark:shadow-black/20">
-          {icon}
+const Navbar: React.FC = () => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4">
+      <div className="mx-auto max-w-5xl rounded-2xl border border-border bg-card/95 shadow-sm backdrop-blur-xl">
+        <div className="flex h-14 items-center justify-between gap-3 px-3">
+          <Link href="/" className="flex items-center gap-2.5 pl-1">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </span>
+            <span className="text-sm font-semibold tracking-tight">TaskifyMinutes</span>
+          </Link>
+
+          <nav className="hidden items-center gap-1 rounded-full bg-muted/80 p-1 md:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target={link.external ? '_blank' : undefined}
+                rel={link.external ? 'noreferrer' : undefined}
+                className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle />
+            <Link href="/sign-in" className="hidden px-2 text-sm text-muted-foreground hover:text-foreground sm:inline">
+              Log in
+            </Link>
+            <Link href="/sign-up" className="rounded-full bg-primary px-3.5 py-1.5 text-sm font-semibold text-primary-foreground hover:opacity-90">
+              Start
+            </Link>
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted md:hidden"
+              onClick={() => setOpen((value) => !value)}
+              aria-label={open ? 'Close menu' : 'Open menu'}
+            >
+              {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
-        <h3 className="text-xl font-semibold mb-3 tracking-tight text-foreground/90 group-hover:text-foreground transition-colors">{title}</h3>
-        <p className="text-muted-foreground group-hover:text-foreground/80 text-sm leading-relaxed font-medium transition-colors">{description}</p>
+
+        {open && (
+          <div className="flex flex-col gap-1 border-t border-border px-3 py-3 md:hidden">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target={link.external ? '_blank' : undefined}
+                rel={link.external ? 'noreferrer' : undefined}
+                onClick={() => setOpen(false)}
+                className="rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted"
+              >
+                {link.label}
+              </a>
+            ))}
+            <Link href="/sign-in" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted sm:hidden">
+              Log in
+            </Link>
+          </div>
+        )}
       </div>
+    </header>
+  );
+};
+
+const features = [
+  {
+    kicker: 'Series',
+    title: 'Same client, same page',
+    description: 'Q2’s decision and the task nobody closed sit above today’s call. Thursday does not start on a blank page.',
+    example: 'Earlier in Finance · Send the Q2 variance note',
+  },
+  {
+    kicker: 'Moment',
+    title: 'Share 00:18, not the file',
+    description: 'Send one transcript line with its timestamp. The link opens on that second, and the rest of the minutes stay underneath.',
+    example: 'Sarah · 00:18 · Draft by tomorrow afternoon',
+  },
+  {
+    kicker: 'Floor time',
+    title: 'Who actually took the call',
+    description: 'After the meeting you can see the split. Aman spoke for six minutes. Aniket spoke for four.',
+    example: 'Aman 6m · Aniket 4m',
+  },
+  {
+    kicker: 'Public link',
+    title: 'The salary line stays home',
+    description: 'Budget figures, salaries, and passwords drop off the share page. Decisions and owners stay readable.',
+    example: 'Hidden · salary, amount, or password',
+  },
+];
+
+const spoken = [
+  { name: 'Aman', time: '6m', width: '60%' },
+  { name: 'Aniket', time: '4m', width: '40%' },
+];
+
+const sourceApps = [
+  { name: 'Meet', mark: <MeetMark /> },
+  { name: 'Zoom', mark: <ZoomMark /> },
+  { name: 'Teams', mark: <TeamsMark /> },
+  { name: 'Slack', mark: <SlackMark /> },
+  { name: 'Webex', mark: <WebexMark /> },
+];
+
+const SourceRow: React.FC = () => (
+  <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+    <span className="text-sm text-muted-foreground">Or record the Meet, Zoom, or Teams tab. The call stays where it is.</span>
+    <div className="flex flex-wrap gap-2">
+      {sourceApps.map((app) => (
+        <span key={app.name} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+          {app.mark}
+          {app.name}
+        </span>
+      ))}
     </div>
   </div>
 );
 
+function MeetMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path fill="#1a73e8" d="M4 7.5A2.5 2.5 0 0 1 6.5 5h7A2.5 2.5 0 0 1 16 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 4 16.5v-9Z" />
+      <path fill="#34a853" d="M16 10.2 20.2 7.6A1 1 0 0 1 21.8 8.5v7a1 1 0 0 1-1.6.8L16 13.7v-3.5Z" />
+    </svg>
+  );
+}
+
+function ZoomMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <rect width="24" height="24" rx="6" fill="#2D8CFF" />
+      <path fill="#fff" d="M6 8.5h7.2c.7 0 1.3.6 1.3 1.3v4.4c0 .7-.6 1.3-1.3 1.3H6.8c-.7 0-1.3-.6-1.3-1.3V9.8c0-.7.6-1.3 1.3-1.3H6Zm9.2 1.7 2.6-1.5c.3-.2.7 0 .7.4v5.8c0 .4-.4.6-.7.4l-2.6-1.5v-3.6Z" />
+    </svg>
+  );
+}
+
+function TeamsMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <rect width="24" height="24" rx="6" fill="#5059C9" />
+      <path fill="#fff" d="M9.2 8.2h5.2v1.5h-1.8V16h-1.6V9.7H9.2V8.2Z" />
+      <circle cx="16.6" cy="8.2" r="1.3" fill="#7B83EB" />
+    </svg>
+  );
+}
+
+function SlackMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path fill="#E01E5A" d="M9.2 14.6a1.6 1.6 0 1 1-1.6-1.6h1.6v1.6Z" />
+      <path fill="#E01E5A" d="M10 14.6a1.6 1.6 0 0 1 3.2 0v4a1.6 1.6 0 0 1-3.2 0v-4Z" />
+      <path fill="#36C5F0" d="M11.6 9.2a1.6 1.6 0 1 1 1.6-1.6v1.6h-1.6Z" />
+      <path fill="#36C5F0" d="M11.6 10a1.6 1.6 0 0 1 0-3.2h4a1.6 1.6 0 0 1 0 3.2h-4Z" />
+      <path fill="#2EB67D" d="M16.8 11.6a1.6 1.6 0 1 1 1.6 1.6h-1.6v-1.6Z" />
+      <path fill="#2EB67D" d="M16 11.6a1.6 1.6 0 0 1-3.2 0v-4a1.6 1.6 0 0 1 3.2 0v4Z" />
+      <path fill="#ECB22E" d="M14.4 16.8a1.6 1.6 0 1 1-1.6 1.6v-1.6h1.6Z" />
+      <path fill="#ECB22E" d="M14.4 16a1.6 1.6 0 0 1 0 3.2h-4a1.6 1.6 0 0 1 0-3.2h4Z" />
+    </svg>
+  );
+}
+
+function WebexMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" fill="#00A0D2" />
+      <path fill="#fff" d="M7.2 13.4c1.2-2.2 2.6-3.8 4.8-4.8 2.2 1 3.6 2.6 4.8 4.8-1.2 2.2-2.6 3.8-4.8 4.8-2.2-1-3.6-2.6-4.8-4.8Z" />
+    </svg>
+  );
+}
+
 const Footer: React.FC = () => (
-  <footer className="border-t border-border py-12 px-6 bg-background">
-    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-          <svg className="w-4 h-4 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+  <footer className="px-4 pb-8 pt-16">
+    <div className="mx-auto max-w-5xl rounded-3xl border border-border bg-card px-6 py-8 md:px-8">
+      <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+        <div className="sm:col-span-2 md:col-span-1">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </span>
+            <span className="text-sm font-semibold">TaskifyMinutes</span>
+          </div>
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+            One thread per client. The last decision, the open task, and today’s call stay on the same page.
+          </p>
         </div>
-        <span className="text-base font-bold tracking-tight text-foreground/80">TaskifyMinutes</span>
+        <div>
+          <p className="text-xs text-muted-foreground">Product</p>
+          <div className="mt-3 flex flex-col gap-2 text-sm">
+            <a href="#features" className="hover:text-foreground">Client threads</a>
+            <a href="#features" className="hover:text-foreground">Share a moment</a>
+            <a href="#features" className="hover:text-foreground">Who spoke</a>
+            <a href="#demo" className="hover:text-foreground">Budget sample</a>
+          </div>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Account</p>
+          <div className="mt-3 flex flex-col gap-2 text-sm">
+            <Link href="/sign-in" className="hover:text-foreground">Log in</Link>
+            <Link href="/sign-up" className="hover:text-foreground">Create account</Link>
+            <Link href="/meetings" className="hover:text-foreground">Your meetings</Link>
+          </div>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Elsewhere</p>
+          <div className="mt-3 flex flex-col gap-2 text-sm">
+            <a href="https://github.com/Aniketgautam959/TaskifyMinutes" target="_blank" rel="noreferrer" className="hover:text-foreground">GitHub</a>
+            <a href="https://taskify-minutes.vercel.app" className="hover:text-foreground">Live app</a>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center gap-8 text-xs font-medium text-muted-foreground">
-        <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-        <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-        <a href="#" className="hover:text-foreground transition-colors">Twitter</a>
-        <a href="#" className="hover:text-foreground transition-colors">LinkedIn</a>
+      <div className="mt-8 flex flex-col gap-2 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <span>&copy; {new Date().getFullYear()} TaskifyMinutes</span>
+        <span>Hindi and Hinglish come back in English.</span>
       </div>
-      <p className="text-muted-foreground text-xs">
-        &copy; {new Date().getFullYear()} TaskifyMinutes Inc.
-      </p>
     </div>
   </footer>
 );
@@ -164,130 +325,127 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen dotted-bg selection:bg-neutral-500 selection:text-white bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-0 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border text-xs font-semibold text-muted-foreground mb-8 bg-muted/30">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neutral-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-neutral-500"></span>
-            </span>
-            Turn Your Meeting into Action.
-          </div>
-          <h1 className="text-5xl md:text-8xl font-extrabold tracking-tighter mb-2 text-foreground md:px-20 pb-4">
-            Meetings into Action.
-          </h1>
-          <p className="text-lg md:text-lg text-muted-foreground max-w-4xl mx-auto mb-5 leading-relaxed font-light">
-            AI-powered summaries, automated MOM generation, and smart task extraction. Stop taking notes, start taking action.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
-            <Link href="/sign-up" className="w-full sm:w-auto px-8 py-3 bg-foreground text-background rounded-full text-base font-medium transition-opacity hover:opacity-90 flex items-center justify-center gap-2 cursor-pointer">
-              Try TaskifyMinutes <span className="text-lg">›</span>
-            </Link>
-            <Link href="https://github.com/Aniketgautam959/TaskifyMinutes" target="_blank" className="w-full sm:w-auto px-8 py-3 bg-indigo-500/20 hover:bg-indigo-600/20 border border-indigo-500/40 rounded-full text-lg font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2 text-indigo-400 cursor-pointer">
-              <Github className="w-5 h-5" />
-              GitHub
-            </Link>
-          </div>
-
-          {/* Dashboard Preview */}
-          <div className="relative mx-auto max-w-6xl animate-fade-in">
-            <div className="rounded-xl border border-border p-2 bg-muted/50 backdrop-blur-xl shadow-2xl">
-              <img
-                src="/dashboard-preview.png"
-                alt="App Dashboard"
-                className="rounded-lg w-full h-auto shadow-inner"
-              />
+      <section className="px-6 pb-16 pt-32">
+        <div className="mx-auto max-w-5xl">
+        <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+          <div className="lg:pt-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Meeting minutes</p>
+            <h1
+              className="mt-4 max-w-lg text-5xl leading-[1.05] tracking-tight text-foreground"
+              style={{ fontFamily: "var(--font-playfair), serif" }}
+            >
+              Turn a call into minutes.
+            </h1>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground">
+              Paste a transcript or drop a recording. The decision, the open task, and who spoke stay on this page for the next call. Hindi comes back in English.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/sign-up" className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90">
+                Start free
+              </Link>
+              <a href="#demo" className="inline-flex items-center justify-center rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
+                Try the budget call
+              </a>
             </div>
-            {/* Fade gradient */}
-            <div className="absolute -bottom-2 left-0 right-0 h-64 bg-gradient-to-t from-background via-background to-transparent z-20"></div>
           </div>
-        </div>
 
-        {/* Background glow for the dashboard */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-full bg-primary/5 blur-[120px] -z-10 rounded-full pointer-events-none"></div>
-      </section>
-
-      {/* Features & Tech Stack */}
-      <section id="features" className="py-20 px-10 relative z-20">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <div>
-              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-foreground">Intelligence, refined.</h2>
-              <p className="text-muted-foreground max-w-xl text-sm md:text-base leading-relaxed">
-                Powered by <span className="text-foreground font-semibold">Gemini Flash</span> and built on <span className="text-foreground font-semibold">Next.js 16</span>,
-                TaskifyMinutes transforms raw audio/video/transcript into structured insights and actionable items in seconds.
-              </p>
+          <div className="rounded-[28px] border border-border bg-card p-4 shadow-[0_24px_50px_-28px_rgba(0,0,0,0.55)] sm:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Finance · Thursday</p>
+                <p className="mt-1 text-lg font-semibold tracking-tight">Q3 Budget Review</p>
+              </div>
+              <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">34m</span>
             </div>
-            {/* Tech Stack Badges */}
-            <div className="flex gap-3 flex-wrap">
-              {['Next.js 16', 'Gemini AI', 'Google Cloud Storage', 'Tailwind CSS', 'TypeScript'].map(tech => (
-                <span key={tech} className="px-3 py-1 rounded-full border border-border bg-muted text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                  {tech}
-                </span>
+
+            <div className="mt-4 rounded-2xl bg-background p-3.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Earlier in Finance</p>
+              <p className="mt-1 text-sm font-medium">Q2 Budget Close</p>
+              <p className="mt-2 text-xs leading-relaxed text-foreground">Decision: carry the variance note into this review.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Still open · Send the Q2 variance note</p>
+            </div>
+
+            <div className="mt-3 rounded-2xl border border-border px-3.5 py-3">
+              <p className="text-[11px] text-muted-foreground">Shared moment · 00:18</p>
+              <p className="mt-1.5 text-sm font-medium">Sarah</p>
+              <p className="mt-1 text-sm leading-relaxed">I can have the draft ready by tomorrow afternoon.</p>
+            </div>
+
+            <div className="mt-4 space-y-2.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Who spoke</p>
+              {spoken.map((person) => (
+                <div key={person.name} className="grid grid-cols-[4.5rem_1fr_2rem] items-center gap-2 text-xs">
+                  <span className="font-medium">{person.name}</span>
+                  <span className="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <span className="block h-full rounded-full bg-primary" style={{ width: person.width }} />
+                  </span>
+                  <span className="text-right text-muted-foreground">{person.time}</span>
+                </div>
               ))}
             </div>
           </div>
+        </div>
+        <SourceRow />
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FeatureCard
-              title="MOM Generator"
-              description="Instantly draft minutes with distinct separation of actions, decisions, and informational nodes."
-              icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
-            />
-            <FeatureCard
-              title="Transcript Generator"
-              description="Generate high-quality transcripts from raw audio/video files in seconds."
-              icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>}
-            />
-            <FeatureCard
-              title="Task Extraction"
-              description="Zero-shot task identification and assignment from natural language conversations."
-              icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>}
-            />
+      <section id="features" className="px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <div className="max-w-xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">After the call</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              What you can send after the call.
+            </h2>
           </div>
+          <div className="mt-8 grid gap-3 md:grid-cols-2">
+            {features.map((feature) => (
+              <article key={feature.title} className="rounded-3xl border border-border bg-card p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{feature.kicker}</p>
+                <h3 className="mt-2 text-xl font-semibold tracking-tight">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feature.description}</p>
+                <p className="mt-4 rounded-xl bg-muted/70 px-3 py-2 font-mono text-[11px] text-foreground/80">{feature.example}</p>
+              </article>
+            ))}
+          </div>
+          <p className="mt-4 rounded-3xl border border-border bg-card px-5 py-4 text-sm leading-relaxed text-muted-foreground">
+            A Hindi or Hinglish recording is written back in English. Speaker names stay as they were spoken.
+          </p>
         </div>
       </section>
 
       {/* Interactive Demo */}
-      <section id="demo" className="py-20 px-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:h-[600px]">
-
-            {/* Left Col: Input */}
-            <div className="lg:col-span-5 flex flex-col h-full">
-              <h3 className="text-3xl md:text-5xl font-bold mb-6 text-foreground flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Live Demo
-              </h3>
+      <section id="demo" className="px-6 py-8">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Thursday’s budget call</p>
+          <h2 className="mb-6 mt-3 text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>Paste it, or play the sample.</h2>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:h-[560px]">
+            <div className="flex h-full flex-col lg:col-span-5">
               <div className="mb-4 inline-flex rounded-full border border-border bg-muted/40 p-1">
                 <button
                   type="button"
                   onClick={() => { setInputMode('text'); setError(null); }}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${inputMode === 'text' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${inputMode === 'text' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                 >
                   Transcript
                 </button>
                 <button
                   type="button"
                   onClick={() => { setInputMode('audio'); setError(null); }}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${inputMode === 'audio' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${inputMode === 'audio' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                 >
                   Audio / Video
                 </button>
               </div>
-              <div className="flex-1 flex flex-col p-1 rounded-3xl bg-muted/30 border border-border shadow-2xl overflow-hidden relative group hover:border-border/80 transition-colors">
+              <div className="flex-1 flex flex-col p-1 rounded-3xl bg-card border border-border shadow-sm overflow-hidden relative group transition-colors">
                 {inputMode === 'text' ? (
                   <textarea
                     className="flex-1 w-full bg-transparent p-6 text-foreground resize-none outline-none font-mono text-sm leading-relaxed scrollbar-hide "
                     value={transcript}
                     onChange={(e) => setTranscript(e.target.value)}
-                    placeholder="Paste your meeting transcript here..."
+                    placeholder="Paste Thursday’s call. Hindi and Hinglish come back in English."
                   />
                 ) : (
                   <label
@@ -335,9 +493,9 @@ const App: React.FC = () => {
                   <button
                     onClick={handleSummarize}
                     disabled={loading || (inputMode === 'text' ? !transcript.trim() : !mediaFile)}
-                    className="w-full sm:w-auto px-4 py-2 bg-foreground text-background rounded-full text-sm font-medium transition-opacity hover:opacity-90 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-semibold transition-opacity hover:opacity-90 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {loading ? 'Processing...' : inputMode === 'audio' ? 'Summarize recording' : 'Analyze Text'}
+                    {loading ? 'Writing the minutes...' : inputMode === 'audio' ? 'Write minutes from this recording' : 'Write the minutes'}
                     {!loading && <span className="text-xs">→</span>}
                   </button>
                 </div>
@@ -352,14 +510,14 @@ const App: React.FC = () => {
 
             {/* Right Col: Output */}
             <div className="lg:col-span-7 h-full min-h-[500px] flex flex-col">
-              <div className="h-full rounded-3xl bg-muted/30 border border-border p-1 relative overflow-hidden">
+              <div className="h-full rounded-3xl bg-card border border-border shadow-sm p-1 relative overflow-hidden">
 
                 {!result && !loading && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
                     <div className="w-16 h-16 rounded-2xl bg-muted/50 border border-border flex items-center justify-center mb-4">
                       <svg className="w-6 h-6 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
                     </div>
-                    <p className="text-sm font-medium">Awaiting Input</p>
+                    <p className="text-sm font-medium">Minutes land here</p>
                   </div>
                 )}
 
@@ -367,7 +525,7 @@ const App: React.FC = () => {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                      <p className="text-xs text-primary font-medium tracking-wide animate-pulse">EXTRACTING INSIGHTS</p>
+                      <p className="text-sm text-muted-foreground">Reading the meeting</p>
                     </div>
                   </div>
                 )}
@@ -375,18 +533,15 @@ const App: React.FC = () => {
                 {result && (
                   <div className="h-full overflow-y-auto custom-scrollbar p-6 space-y-6">
                     {showingSample && (
-                      <div className="rounded-2xl border border-border bg-background/70 p-4">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Sample meeting</p>
-                        <p className="mt-1 text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-playfair), serif' }}>Q3 Budget Review</p>
+                        <div className="rounded-2xl border border-border bg-muted/40 p-4">
+                        <p className="text-xs text-muted-foreground">Finance · Q3 Budget Review</p>
+                        <p className="mt-1 text-lg font-semibold text-foreground">Q3 Budget Review</p>
                         <audio src="/sample-meeting.m4a" controls preload="metadata" className="mt-3 w-full" />
                       </div>
                     )}
                     {/* Summary Block */}
                     <div className="animate-fade-in">
-                      <h4 className="text-md items-center flex gap-2 font-bold text-foreground tracking-widest mb-3">
-                        <span className="w-1 h-1 rounded-full bg-foreground"></span>
-                        Executive Summary
-                      </h4>
+                      <h3 className="mb-2 text-sm font-medium text-foreground">Summary</h3>
                       <p className="text-sm text-foreground/80 leading-relaxed font-light">{result.summary}</p>
                     </div>
 
@@ -395,10 +550,7 @@ const App: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in delay-75">
                       {/* MOM */}
                       <div>
-                        <h4 className="text-md items-center flex gap-2 font-bold text-foreground mb-3">
-                          <span className="w-1 h-1 rounded-full bg-indigo-500"></span>
-                          Minutes & Points
-                        </h4>
+                        <h3 className="mb-3 text-sm font-medium text-foreground">Minutes</h3>
                         <div className="space-y-2">
                           {result.mom.map((item, i) => (
                             <div key={i} className="flex gap-3 text-xs p-3 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors">
@@ -413,10 +565,7 @@ const App: React.FC = () => {
 
                       {/* Tasks */}
                       <div>
-                        <h4 className="text-md items-center flex gap-2 font-bold text-foreground mb-3">
-                          <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
-                          Detected Tasks
-                        </h4>
+                        <h3 className="mb-3 text-sm font-medium text-foreground">Tasks</h3>
                         <div className="space-y-2">
                           {result.tasks.map((task, i) => (
                             <div key={i} className="group flex items-start justify-between gap-3 text-xs p-3 rounded-lg bg-card border border-border hover:border-border/80 transition-all cursor-default">

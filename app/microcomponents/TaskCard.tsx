@@ -17,7 +17,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, showMoveAction, onMove, onEdi
       {/* Header: Title + Badges + Actions */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
-          <h4 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+          <h4 className="text-sm font-semibold text-foreground truncate">
             {task.title}
           </h4>
           <StatusBadge label={task.priority} type="priority" variant={task.priority} />

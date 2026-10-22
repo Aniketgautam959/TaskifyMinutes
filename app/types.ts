@@ -33,6 +33,7 @@ export interface Meeting {
   mom: { type: 'action' | 'decision' | 'info'; content: string }[];
   videoFile?: FileData;
   transcriptFile?: FileData;
+  screenshots?: { file?: FileData; seconds: number }[];
   confidenceLevel?: number;
   thumbnail?: string;
   tags: string[];

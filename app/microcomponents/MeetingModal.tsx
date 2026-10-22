@@ -1,7 +1,15 @@
 
 import React, { useRef, useState } from 'react';
-import { X, Loader2, Mic, Square } from 'lucide-react';
-import { startMeetingCapture } from '@/app/lib/meetingCapture';
+import { X, Loader2, Mic, Square, Camera } from 'lucide-react';
+import { startMeetingCapture, type MeetingSnap } from '@/app/lib/meetingCapture';
+
+type SavedSnap = MeetingSnap & { previewUrl: string };
+
+function formatSnapClock(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
+}
 
 
 interface MeetingModalProps {
@@ -21,10 +29,14 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [recordNote, setRecordNote] = useState<string | null>(null);
   const [recordError, setRecordError] = useState<string | null>(null);
+  const [snaps, setSnaps] = useState<SavedSnap[]>([]);
 
   const [transcriptFile, setTranscriptFile] = useState<File | null>(null);
   const stopRecordingRef = useRef<(() => void) | null>(null);
+  const snapRecordingRef = useRef<(() => Promise<MeetingSnap | null>) | null>(null);
+  const snapsRef = useRef<SavedSnap[]>([]);
   const recordTimerRef = useRef<number | null>(null);
+  const recordSecondsRef = useRef(0);
   const ignoreRecordingRef = useRef(false);
   const fieldsRef = useRef({ title, date, category, transcriptText });
   fieldsRef.current = { title, date, category, transcriptText };
@@ -36,7 +48,7 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
     }
   };
 
-  const submitCapture = async (fileOverride?: File) => {
+  const submitCapture = async (fileOverride?: File, recordedSeconds?: number) => {
     const file = fileOverride || transcriptFile;
     if (!transcriptText && !file) {
       alert("Please provide a transcript, upload a file, or record the meeting.");
@@ -50,6 +62,9 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
         setIsUploading(true);
         const uploadFormData = new FormData();
         uploadFormData.append('file', file);
+        if (recordedSeconds && recordedSeconds > 0) {
+          uploadFormData.append('duration', String(recordedSeconds));
+        }
 
         const uploadResponse = await fetch('/api/documents/upload', {
           method: 'POST',
@@ -65,6 +80,16 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
         }
 
         const { fileId } = await uploadResponse.json();
+
+        const uploadedShots: { id: string; seconds: number }[] = [];
+        for (const shot of snapsRef.current) {
+          const shotBody = new FormData();
+          shotBody.append('file', shot.file);
+          const shotResponse = await fetch('/api/documents/upload', { method: 'POST', body: shotBody });
+          if (!shotResponse.ok) continue;
+          const shotData = await shotResponse.json();
+          if (shotData.fileId) uploadedShots.push({ id: shotData.fileId, seconds: shot.seconds });
+        }
         setIsUploading(false);
 
         setIsProcessing(true);
@@ -74,6 +99,13 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
         formData.append('title', fieldsRef.current.title);
         formData.append('date', fieldsRef.current.date || new Date().toISOString().slice(0, 10));
         formData.append('category', fieldsRef.current.category);
+        if (recordedSeconds && recordedSeconds > 0) {
+          formData.append('duration', String(recordedSeconds));
+        }
+        uploadedShots.forEach((shot) => {
+          formData.append('screenshotIds', shot.id);
+          formData.append('screenshotSeconds', String(shot.seconds));
+        });
 
         response = await fetch('/api/meetings/analyze/file', {
           method: 'POST',
@@ -112,6 +144,9 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
       setDate('');
       setRecordNote(null);
       setRecordError(null);
+      snapsRef.current.forEach((shot) => URL.revokeObjectURL(shot.previewUrl));
+      snapsRef.current = [];
+      setSnaps([]);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to analyze transcript";
       console.error("Failed to analyze transcript:", error);
@@ -128,32 +163,41 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
     setRecordNote(null);
     ignoreRecordingRef.current = false;
     try {
+      snapsRef.current.forEach((shot) => URL.revokeObjectURL(shot.previewUrl));
+      snapsRef.current = [];
+      setSnaps([]);
       const capture = await startMeetingCapture();
       stopRecordingRef.current = capture.stop;
+      snapRecordingRef.current = capture.snap;
       setIsRecording(true);
+      recordSecondsRef.current = 0;
       setRecordSeconds(0);
       setRecordNote(capture.hadMicrophone
         ? "Recording the Meet tab and your microphone."
         : "Recording the Meet tab. Microphone is off, so only the tab audio is included.");
       clearRecordTimer();
       recordTimerRef.current = window.setInterval(() => {
-        setRecordSeconds((seconds) => seconds + 1);
+        recordSecondsRef.current += 1;
+        setRecordSeconds(recordSecondsRef.current);
       }, 1000);
 
       capture.done
         .then((file) => {
           clearRecordTimer();
+          const seconds = recordSecondsRef.current;
           setIsRecording(false);
           stopRecordingRef.current = null;
+          snapRecordingRef.current = null;
           if (ignoreRecordingRef.current) return;
           setTranscriptFile(file);
           setRecordNote("Recording saved. Creating the meeting...");
-          void submitCapture(file);
+          void submitCapture(file, seconds);
         })
         .catch((error: unknown) => {
           clearRecordTimer();
           setIsRecording(false);
           stopRecordingRef.current = null;
+          snapRecordingRef.current = null;
           if (ignoreRecordingRef.current) return;
           setRecordError(error instanceof Error ? error.message : "Recording failed.");
         });
@@ -166,8 +210,25 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
     stopRecordingRef.current?.();
   };
 
+  const handleSnap = async () => {
+    const shot = await snapRecordingRef.current?.();
+    if (!shot) {
+      setRecordError('Could not grab the screen. Keep the Meet tab shared.');
+      return;
+    }
+    if (snapsRef.current.length >= 12) {
+      setRecordError('Twelve screen shots is the limit for one meeting.');
+      return;
+    }
+    setRecordError(null);
+    const saved = { ...shot, previewUrl: URL.createObjectURL(shot.file) };
+    snapsRef.current = [...snapsRef.current, saved];
+    setSnaps(snapsRef.current);
+  };
+
   const handleClose = () => {
     ignoreRecordingRef.current = true;
+    snapRecordingRef.current = null;
     stopRecordingRef.current?.();
     clearRecordTimer();
     setIsRecording(false);
@@ -192,7 +253,7 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-background border border-border rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-card border border-border rounded-3xl w-full max-w-lg shadow-xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border bg-background">
@@ -255,14 +316,24 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
                 <p className="text-xs text-muted-foreground">Chrome: choose the Google Meet tab and turn on Share tab audio.</p>
               </div>
               {isRecording ? (
-                <button
-                  type="button"
-                  onClick={handleStopRecording}
-                  className="shrink-0 inline-flex items-center gap-2 rounded-full bg-red-500 px-3 py-1.5 text-xs font-bold text-white"
-                >
-                  <Square size={12} fill="currentColor" />
-                  Stop {clock}
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleSnap()}
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground"
+                  >
+                    <Camera size={12} />
+                    Snap
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStopRecording}
+                    className="inline-flex items-center gap-2 rounded-full bg-red-500 px-3 py-1.5 text-xs font-bold text-white"
+                  >
+                    <Square size={12} fill="currentColor" />
+                    Stop {clock}
+                  </button>
+                </div>
               ) : (
                 <button
                   type="button"
@@ -275,6 +346,19 @@ const MeetingModal: React.FC<MeetingModalProps> = ({ isOpen, onClose, onSuccess 
                 </button>
               )}
             </div>
+            {isRecording && (
+              <p className="text-xs text-muted-foreground">Snap saves the shared screen at this second. Slides and shared windows stay with the meeting.</p>
+            )}
+            {snaps.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto">
+                {snaps.map((shot) => (
+                  <figure key={shot.previewUrl} className="shrink-0">
+                    <img src={shot.previewUrl} alt={`Screen at ${formatSnapClock(shot.seconds)}`} className="h-14 w-24 rounded-lg border border-border object-cover" />
+                    <figcaption className="mt-1 text-[10px] text-muted-foreground">{formatSnapClock(shot.seconds)}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            )}
             {recordNote && <p className="text-xs text-foreground">{recordNote}</p>}
             {recordError && <p className="text-xs text-red-500">{recordError}</p>}
           </div>

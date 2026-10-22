@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSharedMeeting } from "@/app/lib/sharedMeeting";
+import { REDACTED_LINE } from "@/app/lib/redact";
+import { timestampToSeconds } from "@/app/lib/timestamp";
 
 export async function generateMetadata({
   params,
@@ -17,12 +19,23 @@ export async function generateMetadata({
 
 export default async function SharedMinutesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ t?: string }>;
 }) {
   const { token } = await params;
+  const { t } = await searchParams;
   const meeting = await getSharedMeeting(token);
   if (!meeting) notFound();
+
+  const target = t ? Number(t) : NaN;
+  const moment = Number.isFinite(target)
+    ? meeting.transcript
+        .map((item) => ({ item, at: timestampToSeconds(item.timestamp) }))
+        .filter((entry) => entry.at !== null)
+        .sort((left, right) => Math.abs((left.at as number) - target) - Math.abs((right.at as number) - target))[0]?.item
+    : undefined;
 
   const dateLabel = new Date(meeting.date).toLocaleDateString(undefined, {
     year: "numeric",
@@ -53,6 +66,17 @@ export default async function SharedMinutesPage({
             </div>
           )}
         </header>
+
+        {moment && (
+          <section className="rounded-2xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Shared moment · {moment.timestamp}</p>
+            <p className="mt-2 text-sm font-medium">{moment.speakername}</p>
+            <p className="mt-2 text-base leading-relaxed">{moment.content}</p>
+            {moment.content === REDACTED_LINE && (
+              <p className="mt-2 text-xs text-muted-foreground">The rest of this line is not on the public link.</p>
+            )}
+          </section>
+        )}
 
         {meeting.summary && (
           <section className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">

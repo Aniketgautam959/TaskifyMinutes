@@ -1,5 +1,5 @@
 'use client';
-import React, { use } from 'react';
+import React, { Suspense, use } from 'react';
 import { useRouter } from 'next/navigation';
 import MeetingView from '../../../components/MeetingView';
 import { Task } from '../../../types';
@@ -25,10 +25,12 @@ export default function MeetingDetailsPage({ params }: { params: Promise<{ id: s
         Back to Sessions
       </button>
 
-      <MeetingView 
-        meetingId={id} 
-        onAddTask={handleAddTask} 
-      />
+      <Suspense fallback={<div className="flex min-h-[500px] items-center justify-center text-sm text-muted-foreground">Loading meeting</div>}>
+        <MeetingView 
+          meetingId={id} 
+          onAddTask={handleAddTask} 
+        />
+      </Suspense>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadFileToGCS } from "@/app/services/logic/gcs_upload";
+import { recordingMediaUrl, saveRecording } from "@/app/services/logic/recording_store";
 import { connectToDatabase } from "@/app/lib/db";
 import { FileModel } from "@/app/models/File";
 import { User } from "@/app/models/User";
@@ -41,14 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const uploadResult = await uploadFileToGCS(buffer, file.name, file.type);
-
-    if (!uploadResult) {
-      return NextResponse.json(
-        { error: "Failed to upload file to storage" },
-        { status: 500 }
-      );
-    }
+    const uploadResult = await saveRecording(buffer, file.name, file.type, String(user._id));
 
     const mediaMime = resolveMediaMime(file.name, file.type);
     let filetype: 'text' | 'video' | 'image' | 'audio' = 'text';
@@ -59,6 +52,7 @@ export async function POST(req: NextRequest) {
     // Create File document
     const fileDoc = new FileModel({
       gcsobjectkey: uploadResult.fileName,
+      storageId: uploadResult.storageId,
       filesize: file.size,
       user: user._id,
       filetype: filetype,
@@ -68,17 +62,17 @@ export async function POST(req: NextRequest) {
     await fileDoc.save();
 
     return NextResponse.json(
-      { 
+      {
         fileId: fileDoc._id,
-        url: uploadResult.url, 
-        gcsObjectId: uploadResult.fileName 
+        url: recordingMediaUrl(String(fileDoc._id)),
+        gcsObjectId: uploadResult.fileName,
       },
       { status: 200 }
     );
   } catch (error) {
     console.error("Upload API Error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Could not save the recording." },
       { status: 500 }
     );
   }

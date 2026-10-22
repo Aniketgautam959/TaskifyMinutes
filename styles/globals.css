@@ -4,41 +4,41 @@
 @plugin "tailwindcss-react-aria-components";
 
 :root {
-  --background: #f7f7f8;
-  --foreground: #111113;
-  --muted: #ececef;
-  --muted-foreground: #6b6b76;
+  --background: #e7f0df;
+  --foreground: #171a14;
+  --muted: #d7e3cc;
+  --muted-foreground: #5d6756;
   --card: #ffffff;
-  --card-foreground: #111113;
-  --border: #e4e4e8;
-  --input: #e4e4e8;
-  --primary: #111113;
-  --primary-foreground: #f7f7f8;
+  --card-foreground: #171a14;
+  --border: #d3dfc8;
+  --input: #d3dfc8;
+  --primary: #d7f26a;
+  --primary-foreground: #1a1d14;
 
-  --scrollbar-track: #f7f7f8;
-  --scrollbar-thumb: #c8c8d0;
-  --scrollbar-thumb-hover: #6b6b76;
+  --scrollbar-track: #e7f0df;
+  --scrollbar-thumb: #c3d2b4;
+  --scrollbar-thumb-hover: #5d6756;
 
-  --dotted-bg-color: rgba(17, 17, 19, 0.08);
+  --dotted-bg-color: rgba(23, 26, 20, 0.08);
 }
 
 .dark {
-  --background: #0b0b0d;
-  --foreground: #f5f5f6;
-  --muted: #16161a;
-  --muted-foreground: #9b9ba6;
-  --card: #121216;
-  --card-foreground: #f5f5f6;
-  --border: #26262c;
-  --input: #26262c;
-  --primary: #f5f5f6;
-  --primary-foreground: #111113;
+  --background: #121510;
+  --foreground: #f4f7ef;
+  --muted: #1c2118;
+  --muted-foreground: #a3ad98;
+  --card: #1a1f16;
+  --card-foreground: #f4f7ef;
+  --border: #2c3326;
+  --input: #2c3326;
+  --primary: #d7f26a;
+  --primary-foreground: #1a1d14;
 
-  --scrollbar-track: #0b0b0d;
-  --scrollbar-thumb: #2c2c32;
-  --scrollbar-thumb-hover: #3a3a42;
+  --scrollbar-track: #121510;
+  --scrollbar-thumb: #2c3326;
+  --scrollbar-thumb-hover: #3d4736;
 
-  --dotted-bg-color: rgba(255, 255, 255, 0.06);
+  --dotted-bg-color: rgba(215, 242, 106, 0.08);
 }
 
 @theme {

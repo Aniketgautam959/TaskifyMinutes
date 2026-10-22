@@ -1,5 +1,13 @@
 import { connectToDatabase } from "./db";
 import { Meeting } from "../models/Meeting";
+import { isSensitiveText, REDACTED_LINE } from "./redact";
+
+function redactProse(text: string): string {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => (isSensitiveText(sentence) ? REDACTED_LINE : sentence))
+    .join(" ");
+}
 
 export type SharedMeeting = {
   title: string;
@@ -23,20 +31,20 @@ export async function getSharedMeeting(token: string): Promise<SharedMeeting | n
     title: meeting.title,
     date: new Date(meeting.date).toISOString(),
     duration: meeting.duration || "",
-    summary: meeting.summary || "",
+    summary: meeting.summary ? redactProse(meeting.summary) : "",
     category: meeting.category || "",
     tags: meeting.tags || [],
     mom: (meeting.mom || [])
       .filter((item) => item?.content)
       .map((item) => ({
         type: item.type === "action" || item.type === "decision" || item.type === "info" ? item.type : "info",
-        content: item.content || "",
+        content: isSensitiveText(item.content || "") ? REDACTED_LINE : item.content || "",
       })),
     transcript: (meeting.transcript || [])
       .filter((item) => item?.content)
       .map((item) => ({
         speakername: item.speakername || "Speaker",
-        content: item.content || "",
+        content: isSensitiveText(item.content || "") ? REDACTED_LINE : item.content || "",
         timestamp: item.timestamp || "",
       })),
   };

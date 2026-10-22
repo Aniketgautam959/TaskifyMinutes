@@ -25,7 +25,7 @@ export async function generateMeetingSummary(transcript: string): Promise<Summar
 
   const response = await ai.models.generateContent({
     model: modelName,
-    contents: `Analyze the following meeting transcript. Provide a concise summary, a list of MOM (Minutes of Meeting) points, specific action tasks for team members, and any scheduled events found in the text. \n\n${transcript}`,
+    contents: `Analyze the following meeting transcript. Provide a concise summary, a list of MOM (Minutes of Meeting) points, specific action tasks for team members, and any scheduled events found in the text. Write every field in English. If the transcript is in Hindi, Hinglish, or another language, translate the summary, minutes, tasks, and events into clear English.\n\n${transcript}`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {

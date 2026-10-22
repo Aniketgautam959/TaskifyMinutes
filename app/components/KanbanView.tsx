@@ -28,8 +28,9 @@ const KanbanView: React.FC = () => {
       const activeTasks = data.filter((t: any) => t.suggested === false);
       setTasks(activeTasks);
     } catch (err) {
-      console.error('Failed to fetch tasks:', err);
-      setError('Tasks could not load. The database is not reachable yet.');
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status !== 401) console.error('Failed to fetch tasks:', err);
+      setError(status === 401 ? 'Sign in to see your tasks.' : 'Tasks could not load. The database is not reachable yet.');
     } finally {
       setIsLoading(false);
     }
@@ -109,10 +110,10 @@ const KanbanView: React.FC = () => {
   };
 
   const columns: { title: TaskStatus; accent: string; bg: string }[] = [
-    { title: 'Backlog', accent: 'bg-gray-300', bg: 'bg-brand-surface' },
-    { title: 'In Progress', accent: 'bg-indigo-500', bg: 'bg-brand-lavender/50' },
-    { title: 'Review', accent: 'bg-orange-500', bg: 'bg-brand-sky/50' },
-    { title: 'Completed', accent: 'bg-emerald-500', bg: 'bg-brand-mint/50' }
+    { title: 'Backlog', accent: 'bg-muted-foreground', bg: 'bg-card' },
+    { title: 'In Progress', accent: 'bg-primary', bg: 'bg-card' },
+    { title: 'Review', accent: 'bg-amber-400', bg: 'bg-card' },
+    { title: 'Completed', accent: 'bg-emerald-600', bg: 'bg-card' }
   ];
 
   if (isLoading) {
@@ -188,7 +189,7 @@ const KanbanView: React.FC = () => {
              {/* New Task Button */}
              <button 
               onClick={openCreateModal}
-              className="w-full md:w-auto justify-center px-4 py-2.5 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity active:scale-[0.98] flex items-center gap-1.5 whitespace-nowrap"
+              className="w-full md:w-auto justify-center px-4 py-2.5 bg-primary text-primary-foreground rounded-full text-sm font-semibold hover:opacity-90 transition-opacity active:scale-[0.98] flex items-center gap-1.5 whitespace-nowrap"
             >
               <Plus size={14} strokeWidth={3} /> New Task
             </button>
