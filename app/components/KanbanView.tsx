@@ -147,12 +147,12 @@ const KanbanView: React.FC = () => {
         Uses h-[calc(100vh-...)] to fill screen. 
         Flex-col to separate Header and Board.
       */}
-      <div className="flex flex-col h-[calc(100vh-6rem)] w-full pt-4 px-4 md:px-8 space-y-6">
+      <div className="flex flex-col h-[calc(100vh-9rem)] md:h-[calc(100vh-6rem)] w-full pt-2 sm:pt-4 px-4 md:px-8 space-y-4 sm:space-y-6">
         
         {/* 1. Controller Header */}
         <div className="shrink-0 flex flex-col xl:flex-row xl:items-end justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-3xl md:text-4xl font-semibold text-foreground tracking-tight">Tasks</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground tracking-tight">Tasks</h1>
             <p className="hidden md:block text-sm text-muted-foreground">Move work from the meeting onto the board.</p>
           </div>
 
@@ -200,7 +200,7 @@ const KanbanView: React.FC = () => {
         <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
            <div className="flex h-full gap-4 md:gap-6 min-w-full w-max px-1">
               {columns.map(col => (
-                <div key={col.title} className="w-[300px] md:w-[320px] lg:w-[350px] shrink-0 h-full">
+                <div key={col.title} className="w-[min(280px,85vw)] sm:w-[300px] md:w-[320px] lg:w-[350px] shrink-0 h-full">
                   <KanbanColumn 
                     title={col.title}
                     accent={col.accent}

@@ -101,9 +101,9 @@ const MeetingsTable: React.FC<MeetingsTableProps> = ({ onSelectMeeting }) => {
   return (
     <div className="w-full h-full flex flex-col">
        {/* Responsive Header */}
-       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 px-1">
-          <div className="space-y-1">
-             <h1 className="text-3xl md:text-4xl font-semibold text-foreground tracking-tight">Meetings</h1>
+       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 px-0.5">
+          <div className="space-y-1 min-w-0">
+             <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground tracking-tight">Meetings</h1>
              <p className="text-muted-foreground text-sm">Notes, transcripts, and tasks from your sessions.</p>
           </div>
           
@@ -130,11 +130,11 @@ const MeetingsTable: React.FC<MeetingsTableProps> = ({ onSelectMeeting }) => {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-border text-xs text-muted-foreground">
-                  <th className="px-5 py-3 font-medium">Meeting</th>
+                  <th className="px-3 sm:px-5 py-3 font-medium">Meeting</th>
                   <th className="px-5 py-3 font-medium hidden md:table-cell">Date</th>
                   <th className="px-5 py-3 font-medium hidden sm:table-cell">Category</th>
                   <th className="px-5 py-3 font-medium hidden lg:table-cell">Tags</th>
-                  <th className="px-5 py-3 font-medium w-24"></th>
+                  <th className="px-3 sm:px-5 py-3 font-medium w-16 sm:w-24"></th>
                 </tr>
               </thead>
               <tbody>
@@ -144,17 +144,17 @@ const MeetingsTable: React.FC<MeetingsTableProps> = ({ onSelectMeeting }) => {
                     onClick={() => onSelectMeeting(meeting)}
                     className="group border-b border-border last:border-0 cursor-pointer hover:bg-muted/40 transition-colors"
                   >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="px-3 sm:px-5 py-3 sm:py-4">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                         {covers[meeting.id] && (
                           <img
                             src={covers[meeting.id]}
                             alt=""
-                            className="h-12 w-20 shrink-0 rounded-lg border border-border object-cover"
+                            className="hidden sm:block h-12 w-20 shrink-0 rounded-lg border border-border object-cover"
                           />
                         )}
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground">{meeting.title}</p>
+                          <p className="text-sm font-semibold text-foreground line-clamp-2 sm:line-clamp-1">{meeting.title}</p>
                           <p className="mt-1 text-xs text-muted-foreground line-clamp-1 max-w-xl">{meeting.summary}</p>
                         </div>
                       </div>
@@ -179,16 +179,16 @@ const MeetingsTable: React.FC<MeetingsTableProps> = ({ onSelectMeeting }) => {
                         ))}
                       </div>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-3 sm:px-5 py-3 sm:py-4">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={(e) => handleDelete(e, meeting.id)}
-                          className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                          className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-500/10 rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
                           title="Delete meeting"
                         >
                           <Trash2 size={14} />
                         </button>
-                        <ArrowUpRight size={16} className="text-muted-foreground" />
+                        <ArrowUpRight size={16} className="text-muted-foreground shrink-0" />
                       </div>
                     </td>
                   </tr>

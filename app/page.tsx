@@ -334,7 +334,7 @@ const App: React.FC = () => {
           <div className="lg:pt-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Meeting minutes</p>
             <h1
-              className="mt-4 max-w-lg text-5xl leading-[1.05] tracking-tight text-foreground"
+              className="mt-4 max-w-lg text-4xl sm:text-5xl leading-[1.05] tracking-tight text-foreground"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
               Turn a call into minutes.

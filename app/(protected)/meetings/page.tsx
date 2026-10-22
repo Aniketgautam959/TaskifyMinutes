@@ -12,7 +12,7 @@ export default function MeetingsPage() {
   };
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto space-y-6 px-8">
+    <div className="w-full max-w-[1600px] mx-auto space-y-6 px-4 sm:px-6 md:px-8">
       {/* Header Section */}
       <MeetingsTable onSelectMeeting={handleSelectMeeting} />
     </div>

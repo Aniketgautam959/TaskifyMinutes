@@ -44,11 +44,11 @@ export default async function SharedMinutesPage({
   });
 
   return (
-    <main className="min-h-screen bg-background px-6 py-12 text-foreground">
+    <main className="min-h-screen bg-background px-4 sm:px-6 py-10 sm:py-12 text-foreground">
       <article className="mx-auto max-w-3xl space-y-8">
         <header className="space-y-3">
           <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Shared minutes</p>
-          <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight break-words" style={{ fontFamily: "var(--font-playfair), serif" }}>
             {meeting.title}
           </h1>
           <p className="text-sm text-muted-foreground">

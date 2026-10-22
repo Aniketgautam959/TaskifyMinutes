@@ -402,28 +402,32 @@ const MeetingView: React.FC<MeetingViewProps> = ({ meetingId, onAddTask }) => {
   const suggestedTasks = meeting.tasks ? meeting.tasks.filter((t: any) => t.suggested === true) : [];
 
   return (
-    <div className="h-[calc(100vh-6rem)] w-full flex flex-col gap-4 pt-2 px-2 md:px-0">
-      <header className="shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-3 px-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-4xl font-bold text-foreground tracking-tight mb-2">
+    <div className="h-[calc(100vh-9rem)] md:h-[calc(100vh-6rem)] w-full flex flex-col gap-4 pt-2 px-0 md:px-0">
+      <header className="shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 border-b border-border pb-3 px-1 sm:px-4">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-foreground tracking-tight mb-2 break-words">
               {meeting.title}
             </h1>
           </div>
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-medium pl-1 md:pl-0">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground font-medium pl-0">
             <span className="flex items-center gap-1"><Calendar size={12} /> {new Date(meeting.date).toLocaleDateString()}</span>
-            <span className="w-px h-3 bg-border" />
+            <span className="hidden sm:block w-px h-3 bg-border" />
             <span className="flex items-center gap-1"><Clock size={12} /> {meeting.duration}</span>
-            <span className="w-px h-3 bg-border" />
-            <div className="flex gap-2">
-              {meeting.tags.slice(0, 3).map(tag => (
-                <span key={tag} className="text-muted-foreground">#{tag}</span>
-              ))}
-            </div>
+            {meeting.tags.length > 0 && (
+              <>
+                <span className="hidden sm:block w-px h-3 bg-border" />
+                <div className="flex flex-wrap gap-2">
+                  {meeting.tags.slice(0, 3).map(tag => (
+                    <span key={tag} className="text-muted-foreground">#{tag}</span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end md:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-end md:self-auto">
           <button
             onClick={handleDeleteClick}
             className="px-3 md:px-4 py-2 bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 rounded-lg text-sm font-medium hover:bg-red-500/15 transition-colors flex items-center gap-2"

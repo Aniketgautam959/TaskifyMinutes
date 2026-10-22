@@ -26,7 +26,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+      className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-transparent text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
     >
       {isDark ? (
         <Sun className="h-[1.2rem] w-[1.2rem] text-yellow-500" />

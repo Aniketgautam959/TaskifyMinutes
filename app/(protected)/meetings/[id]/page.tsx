@@ -14,7 +14,7 @@ export default function MeetingDetailsPage({ params }: { params: Promise<{ id: s
   };
 
   return (
-    <div className="space-y-6 px-8">
+    <div className="space-y-6 px-4 sm:px-6 md:px-8">
       <button 
         onClick={() => router.back()}
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium pl-1"
