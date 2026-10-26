@@ -19,9 +19,25 @@ interface SummaryResult {
 // --- Sub-Components ---
 
 const navLinks = [
+  { href: '#problem', label: 'Why' },
   { href: '#features', label: 'Product' },
   { href: '#demo', label: 'Demo' },
   { href: 'https://github.com/Aniketgautam959/TaskifyMinutes', label: 'GitHub', external: true },
+];
+
+const problems = [
+  {
+    title: 'Notes get skipped',
+    body: 'The call ends. You tell yourself you’ll write it up later. Later never comes, and the client asks what you agreed last Thursday.',
+  },
+  {
+    title: 'Tasks slip away',
+    body: 'A deadline buried in chat. A revision promised on the call. By invoice week, half of it has already leaked out of your head.',
+  },
+  {
+    title: 'Language gets in the way',
+    body: 'The Meet ran in Hindi or Hinglish. The client needs English minutes. Rewriting from memory is where the real mistakes start.',
+  },
 ];
 
 const Navbar: React.FC = () => {
@@ -99,34 +115,34 @@ const Navbar: React.FC = () => {
 
 const features = [
   {
-    kicker: 'Series',
+    kicker: 'Client thread',
     title: 'Same client, same page',
-    description: 'Q2’s decision and the task nobody closed sit above today’s call. Thursday does not start on a blank page.',
-    example: 'Earlier in Finance · Send the Q2 variance note',
+    description: 'Last week’s decision and the open revision sit above today’s call. You do not restart the brief from a blank ChatGPT box.',
+    example: 'Earlier with Acme · Send the revised quote',
   },
   {
     kicker: 'Moment',
-    title: 'Share 00:18, not the file',
-    description: 'Send one transcript line with its timestamp. The link opens on that second, and the rest of the minutes stay underneath.',
-    example: 'Sarah · 00:18 · Draft by tomorrow afternoon',
+    title: 'Share 00:18, not the whole Meet',
+    description: 'Send the exact line where the client locked the scope. The link opens on that second; the rest of the minutes stay under it.',
+    example: 'Client · 00:18 · Ship by Friday EOD',
   },
   {
-    kicker: 'Floor time',
-    title: 'Who actually took the call',
-    description: 'After the meeting you can see the split. Aman spoke for six minutes. Aniket spoke for four.',
-    example: 'Aman 6m · Aniket 4m',
+    kicker: 'No language wall',
+    title: 'Hindi in. English out.',
+    description: 'Record the call as it happened — Hindi, Hinglish, or mixed. Minutes, decisions, and tasks come back in clear English.',
+    example: 'Hinglish Meet → English MOM + tasks',
   },
   {
-    kicker: 'Public link',
-    title: 'The salary line stays home',
-    description: 'Budget figures, salaries, and passwords drop off the share page. Decisions and owners stay readable.',
-    example: 'Hidden · salary, amount, or password',
+    kicker: 'Board',
+    title: 'Tasks leave the call alive',
+    description: 'Action items land on your board with priority. What the client asked for does not die in a forgotten recording.',
+    example: 'High · Send draft · Due after this call',
   },
 ];
 
 const spoken = [
-  { name: 'Aman', time: '6m', width: '60%' },
-  { name: 'Aniket', time: '4m', width: '40%' },
+  { name: 'Client', time: '6m', width: '60%' },
+  { name: 'You', time: '4m', width: '40%' },
 ];
 
 const sourceApps = [
@@ -139,7 +155,7 @@ const sourceApps = [
 
 const SourceRow: React.FC = () => (
   <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-    <span className="text-sm text-muted-foreground">Or record the Meet, Zoom, or Teams tab. The call stays where it is.</span>
+    <span className="text-sm text-muted-foreground">Record the Meet, Zoom, or Teams tab while you work. No language barrier on the write-up.</span>
     <div className="flex flex-wrap gap-2">
       {sourceApps.map((app) => (
         <span key={app.name} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
@@ -217,16 +233,16 @@ const Footer: React.FC = () => (
             <span className="text-sm font-semibold">TaskifyMinutes</span>
           </div>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
-            One thread per client. The last decision, the open task, and today’s call stay on the same page.
+            Built for freelancers whose client calls slip away. Minutes, decisions, and tasks — with no language barrier.
           </p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">Product</p>
           <div className="mt-3 flex flex-col gap-2 text-sm">
+            <a href="#problem" className="hover:text-foreground">The problem</a>
             <a href="#features" className="hover:text-foreground">Client threads</a>
-            <a href="#features" className="hover:text-foreground">Share a moment</a>
-            <a href="#features" className="hover:text-foreground">Who spoke</a>
-            <a href="#demo" className="hover:text-foreground">Budget sample</a>
+            <a href="#features" className="hover:text-foreground">No language wall</a>
+            <a href="#demo" className="hover:text-foreground">Try a sample call</a>
           </div>
         </div>
         <div>
@@ -247,7 +263,7 @@ const Footer: React.FC = () => (
       </div>
       <div className="mt-8 flex flex-col gap-2 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span>&copy; {new Date().getFullYear()} TaskifyMinutes</span>
-        <span>Hindi and Hinglish come back in English.</span>
+        <span>No language barrier — Hindi and Hinglish come back in English.</span>
       </div>
     </div>
   </footer>
@@ -332,22 +348,22 @@ const App: React.FC = () => {
         <div className="mx-auto max-w-5xl">
         <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           <div className="lg:pt-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Meeting minutes</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">For freelancers</p>
             <h1
               className="mt-4 max-w-lg text-4xl sm:text-5xl leading-[1.05] tracking-tight text-foreground"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              Turn a call into minutes.
+              Client calls that don’t slip away.
             </h1>
             <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground">
-              Paste a transcript or drop a recording. The decision, the open task, and who spoke stay on this page for the next call. Hindi comes back in English.
+              When notes get skipped and tasks vanish after a Meet — keep minutes, decisions, and board tasks in one place. No language barrier.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/sign-up" className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90">
                 Start free
               </Link>
-              <a href="#demo" className="inline-flex items-center justify-center rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
-                Try the budget call
+              <a href="#problem" className="inline-flex items-center justify-center rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
+                See the problem
               </a>
             </div>
           </div>
@@ -355,23 +371,23 @@ const App: React.FC = () => {
           <div className="rounded-[28px] border border-border bg-card p-4 shadow-[0_24px_50px_-28px_rgba(0,0,0,0.55)] sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Finance · Thursday</p>
-                <p className="mt-1 text-lg font-semibold tracking-tight">Q3 Budget Review</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Acme · Client call</p>
+                <p className="mt-1 text-lg font-semibold tracking-tight">Website revision sync</p>
               </div>
-              <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">34m</span>
+              <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">28m</span>
             </div>
 
             <div className="mt-4 rounded-2xl bg-background p-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Earlier in Finance</p>
-              <p className="mt-1 text-sm font-medium">Q2 Budget Close</p>
-              <p className="mt-2 text-xs leading-relaxed text-foreground">Decision: carry the variance note into this review.</p>
-              <p className="mt-1 text-xs text-muted-foreground">Still open · Send the Q2 variance note</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Earlier with Acme</p>
+              <p className="mt-1 text-sm font-medium">Kickoff · Scope lock</p>
+              <p className="mt-2 text-xs leading-relaxed text-foreground">Decision: homepage redesign ships before the blog.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Still open · Send the revised quote</p>
             </div>
 
             <div className="mt-3 rounded-2xl border border-border px-3.5 py-3">
               <p className="text-[11px] text-muted-foreground">Shared moment · 00:18</p>
-              <p className="mt-1.5 text-sm font-medium">Sarah</p>
-              <p className="mt-1 text-sm leading-relaxed">I can have the draft ready by tomorrow afternoon.</p>
+              <p className="mt-1.5 text-sm font-medium">Client</p>
+              <p className="mt-1 text-sm leading-relaxed">Can you ship the draft by Friday EOD?</p>
             </div>
 
             <div className="mt-4 space-y-2.5">
@@ -392,12 +408,34 @@ const App: React.FC = () => {
         </div>
       </section>
 
+      <section id="problem" className="px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">The problem</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              Freelancer meetings that quietly disappear.
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+              You’re on back-to-back client Meets. The recording sits in Drive. The WhatsApp follow-up never gets written. Scope, deadlines, and “what we decided” leak out before the next invoice.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-3 md:grid-cols-3">
+            {problems.map((problem) => (
+              <article key={problem.title} className="rounded-3xl border border-border bg-card p-5">
+                <h3 className="text-lg font-semibold tracking-tight">{problem.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{problem.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="features" className="px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <div className="max-w-xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">After the call</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">What TaskifyMinutes does</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              What you can send after the call.
+              From a skipped call to minutes you can send.
             </h2>
           </div>
           <div className="mt-8 grid gap-3 md:grid-cols-2">
@@ -410,17 +448,14 @@ const App: React.FC = () => {
               </article>
             ))}
           </div>
-          <p className="mt-4 rounded-3xl border border-border bg-card px-5 py-4 text-sm leading-relaxed text-muted-foreground">
-            A Hindi or Hinglish recording is written back in English. Speaker names stay as they were spoken.
-          </p>
         </div>
       </section>
 
       {/* Interactive Demo */}
       <section id="demo" className="px-6 py-8">
         <div className="mx-auto max-w-5xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Thursday’s budget call</p>
-          <h2 className="mb-6 mt-3 text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>Paste it, or play the sample.</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Try it on a client call</p>
+          <h2 className="mb-6 mt-3 text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>Paste notes, or drop a recording.</h2>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:h-[560px]">
             <div className="flex h-full flex-col lg:col-span-5">
               <div className="mb-4 inline-flex rounded-full border border-border bg-muted/40 p-1">
@@ -445,7 +480,7 @@ const App: React.FC = () => {
                     className="flex-1 w-full bg-transparent p-6 text-foreground resize-none outline-none font-mono text-sm leading-relaxed scrollbar-hide "
                     value={transcript}
                     onChange={(e) => setTranscript(e.target.value)}
-                    placeholder="Paste Thursday’s call. Hindi and Hinglish come back in English."
+                    placeholder="Paste a client call. Hindi or Hinglish comes back in English — no language barrier."
                   />
                 ) : (
                   <label
